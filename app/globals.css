@@ -1,0 +1,885 @@
+@import 'tailwindcss';
+
+@font-face {
+  font-family: 'Geist Sans';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/Geist-Variable.woff2')
+    format('woff2');
+}
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/GeistMono-Variable.woff2')
+    format('woff2');
+}
+
+/* ============================================================
+   FUNNELSCOUT — DESIGN SYSTEM
+   globals.css · Tailwind CSS 4 + shadcn/ui
+   
+   Sections:
+   1. @theme — Tailwind 4 design tokens
+   2. @layer base — CSS variables + dark mode (shadcn compat)
+   3. @layer base — global resets + typography
+   4. @layer components — reusable component utilities
+   ============================================================ */
+
+/* ============================================================
+   1. TAILWIND 4 THEME
+   All tokens available as Tailwind utilities:
+   bg-fs-bg, text-fs-primary, border-fs-border, etc.
+   ============================================================ */
+
+@theme {
+  /* --- Backgrounds --- */
+  --color-fs-bg: #0c0f14; /* page background */
+  --color-fs-surface: #131720; /* cards, panels */
+  --color-fs-surface-2: #0e1420; /* nested surfaces, report blocks */
+  --color-fs-sidebar: #0e1218; /* sidebar background */
+
+  /* --- Borders --- */
+  --color-fs-border: #1e2736; /* default border */
+
+  /* --- Text --- */
+  --color-fs-primary: #eef2f8; /* headings, values, primary content */
+  --color-fs-secondary: #7a8a9e; /* labels, descriptions, secondary copy */
+  --color-fs-muted: #c8d0dc; /* body copy inside reports/cards */
+  --color-fs-faded: #4d5f78; /* deliberately wyciszone: timestamps, footer, col headers */
+
+  /* --- Accent (amber) --- */
+  --color-fs-amber: #f59e0b;
+  --color-fs-amber-hover: #d97706;
+  --color-fs-amber-dim: rgba(245, 158, 11, 0.08);
+  --color-fs-amber-ring: rgba(245, 158, 11, 0.25);
+
+  /* --- Status — health scores, anomalies, revenue --- */
+  --color-fs-green: #4ade80; /* health ≥ 70, revenue positive */
+  --color-fs-green-bg: rgba(74, 222, 128, 0.1);
+  --color-fs-yellow: #fbbf24; /* health 40–69, warnings */
+  --color-fs-yellow-bg: rgba(251, 191, 36, 0.1);
+  --color-fs-red: #f87171; /* health < 40, anomalies, at-risk */
+  --color-fs-red-bg: rgba(248, 113, 113, 0.06);
+
+  /* --- Font families (used by @layer base + .fs-* utilities) --- */
+  --font-sans:
+    'Geist Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+  --font-mono:
+    'Geist Mono', ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Monaco,
+    Consolas, monospace;
+
+  /* --- Typography scale --- */
+  --font-size-hero: 3rem; /* 48px — hero h1 */
+  --font-size-section: 1.375rem; /* 22px — section headings */
+  --font-size-heading: 1.125rem; /* 18px — card/step headings */
+  --font-size-subheading: 0.9375rem; /* 15px — subheadings */
+  --font-size-body: 0.875rem; /* 14px — body copy */
+  --font-size-small: 0.8125rem; /* 13px — table rows, list items */
+  --font-size-caption: 0.75rem; /* 12px — meta, timestamps */
+  --font-size-label: 0.6875rem; /* 11px — uppercase section labels */
+  --font-size-mono-tag: 0.6875rem; /* 11px — METRICS / ANOMALIES labels */
+
+  /* --- Letter spacing --- */
+  --tracking-label: 0.12em; /* section labels: HOW IT WORKS */
+  --tracking-tag: 0.1em; /* METRICS, ANOMALIES, col headers */
+  --tracking-tight: -0.03em; /* large mono numbers */
+  --tracking-heading: -0.02em; /* headings */
+
+  /* --- Border radius --- */
+  --radius-tag: 4px; /* inline code chips, status tags */
+  --radius-btn: 6px; /* buttons */
+  --radius-input: 8px; /* form inputs */
+  --radius-card: 10px; /* cards, panels, report blocks */
+  --radius-modal: 12px; /* modals, main containers */
+
+  /* --- Sidebar --- */
+  --sidebar-width: 220px;
+}
+
+/* ============================================================
+   2. CSS VARIABLES — shadcn/ui compatibility layer
+   shadcn reads from @layer base :root variables.
+   These map FunnelScout tokens to shadcn's expected names.
+   ============================================================ */
+
+@layer base {
+  :root {
+    /* shadcn expects HSL values for some utilities — 
+       we override the channel variables with RGB equivalents.
+       For Tailwind 4 + shadcn, direct hex on CSS vars works. */
+
+    --background: #0c0f14;
+    --foreground: #eef2f8;
+
+    --card: #131720;
+    --card-foreground: #eef2f8;
+
+    --popover: #131720;
+    --popover-foreground: #eef2f8;
+
+    --primary: #f59e0b;
+    --primary-foreground: #0c0f14;
+
+    --secondary: #1e2736;
+    --secondary-foreground: #7a8a9e;
+
+    --muted: #1e2736;
+    --muted-foreground: #7a8a9e;
+
+    --accent: rgba(245, 158, 11, 0.08);
+    --accent-foreground: #f59e0b;
+
+    --destructive: #f87171;
+    --destructive-foreground: #0c0f14;
+
+    --border: #1e2736;
+    --input: #1e2736;
+    --ring: #f59e0b;
+
+    --radius: 0.625rem; /* 10px — shadcn card radius */
+  }
+
+  /* FunnelScout is dark-only — no light mode variant.
+     If you add a light mode later, add [data-theme="light"] here. */
+}
+
+/* ============================================================
+   3. BASE RESETS + GLOBAL TYPOGRAPHY
+   ============================================================ */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    border-color: var(--color-fs-border);
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-fs-bg);
+    color: var(--color-fs-primary);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-body);
+    line-height: 1.6;
+  }
+
+  /* --- Headings --- */
+  h1 {
+    font-size: var(--font-size-hero);
+    font-weight: 700;
+    letter-spacing: var(--tracking-heading);
+    line-height: 1.08;
+    color: var(--color-fs-primary);
+  }
+
+  h2 {
+    font-size: var(--font-size-section);
+    font-weight: 700;
+    letter-spacing: var(--tracking-heading);
+    line-height: 1.2;
+    color: var(--color-fs-primary);
+  }
+
+  h3 {
+    font-size: var(--font-size-heading);
+    font-weight: 600;
+    letter-spacing: var(--tracking-heading);
+    line-height: 1.3;
+    color: var(--color-fs-primary);
+  }
+
+  h4 {
+    font-size: var(--font-size-subheading);
+    font-weight: 600;
+    color: var(--color-fs-primary);
+  }
+
+  p {
+    line-height: 1.65;
+  }
+
+  /* --- Links --- */
+  a {
+    color: var(--color-fs-amber);
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--color-fs-amber-hover);
+  }
+
+  /* --- Inputs, textareas, selects — base reset --- */
+  input,
+  textarea,
+  select {
+    background-color: var(--color-fs-surface);
+    border: 1px solid var(--color-fs-border);
+    border-radius: var(--radius-input);
+    color: var(--color-fs-primary);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-small);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-fs-secondary);
+  }
+
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+    border-color: var(--color-fs-amber);
+    box-shadow: 0 0 0 2px var(--color-fs-amber-ring);
+  }
+
+  /* --- Dividers --- */
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-fs-border);
+  }
+
+  /* --- Scrollbar (webkit) — keep minimal, dark-themed --- */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-fs-border);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #2d3f55;
+  }
+}
+
+/* ============================================================
+   4. COMPONENT UTILITIES
+   Reusable patterns.
+   Use these as @apply targets or reference for JSX className.
+   ============================================================ */
+
+@layer components {
+  /* --- Section label — "HOW IT WORKS", "PRICING" etc. --- */
+  .fs-label {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-label);
+    letter-spacing: var(--tracking-label);
+    color: var(--color-fs-secondary);
+    text-transform: uppercase;
+  }
+
+  /* --- Report section tag — "METRICS", "ANOMALIES", "RECOMMENDATIONS" --- */
+  .fs-tag {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-mono-tag);
+    letter-spacing: var(--tracking-tag);
+    text-transform: uppercase;
+  }
+
+  /* --- Metric value — large mono numbers in stat row --- */
+  .fs-metric {
+    font-family: var(--font-mono);
+    font-size: 1.75rem; /* 28px */
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-fs-primary);
+    line-height: 1;
+  }
+
+  /* --- Table column header --- */
+  .fs-col-header {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-mono-tag);
+    letter-spacing: var(--tracking-tag);
+    text-transform: uppercase;
+    color: var(--color-fs-faded);
+  }
+
+  /* --- Table data cell --- */
+  .fs-cell {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-small);
+    color: var(--color-fs-secondary);
+  }
+
+  /* --- Card / panel --- */
+  .fs-card {
+    background-color: var(--color-fs-surface);
+    border: 1px solid var(--color-fs-border);
+    border-radius: var(--radius-card);
+  }
+
+  /* --- Report block (nested inside card) --- */
+  .fs-report-block {
+    background-color: var(--color-fs-surface-2);
+    border: 1px solid var(--color-fs-border);
+    border-radius: var(--radius-card);
+  }
+
+  /* --- Health score progress bar track --- */
+  .fs-bar-track {
+    height: 3px;
+    background-color: var(--color-fs-border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  /* --- Health badge — green --- */
+  .fs-health-green {
+    background-color: var(--color-fs-green-bg);
+    color: var(--color-fs-green);
+  }
+
+  /* --- Health badge — yellow --- */
+  .fs-health-yellow {
+    background-color: var(--color-fs-yellow-bg);
+    color: var(--color-fs-yellow);
+  }
+
+  /* --- Health badge — red --- */
+  .fs-health-red {
+    background-color: var(--color-fs-red-bg);
+    color: var(--color-fs-red);
+  }
+
+  /* --- Report section border accent (left stripe) --- */
+  .fs-stripe-neutral {
+    border-left: 3px solid var(--color-fs-secondary);
+  }
+  .fs-stripe-red {
+    border-left: 3px solid var(--color-fs-red);
+  }
+  .fs-stripe-amber {
+    border-left: 3px solid var(--color-fs-amber);
+  }
+
+  /* --- Pipeline flow chip --- */
+  .fs-chip {
+    background-color: var(--color-fs-surface-2);
+    border: 1px solid var(--color-fs-border);
+    border-radius: var(--radius-tag);
+    padding: 4px 10px;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-label);
+    color: var(--color-fs-secondary);
+  }
+
+  .fs-chip-amber {
+    background-color: var(--color-fs-amber-dim);
+    border: 1px solid var(--color-fs-amber-ring);
+    color: var(--color-fs-amber);
+  }
+
+  /* --- Primary button (amber fill) --- */
+  .fs-btn-primary {
+    background-color: var(--color-fs-amber);
+    color: #0c0f14;
+    font-weight: 700;
+    border-radius: var(--radius-btn);
+    border: none;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+
+  .fs-btn-primary:hover {
+    background-color: var(--color-fs-amber-hover);
+  }
+
+  .fs-btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* --- Ghost button (amber outline) --- */
+  .fs-btn-ghost {
+    background-color: transparent;
+    color: var(--color-fs-amber);
+    border: 1px solid var(--color-fs-amber-ring);
+    border-radius: var(--radius-btn);
+    cursor: pointer;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .fs-btn-ghost:hover {
+    background-color: var(--color-fs-amber-dim);
+    border-color: rgba(245, 158, 11, 0.4);
+  }
+
+  /* --- Outline button (neutral) --- */
+  .fs-btn-outline {
+    background-color: transparent;
+    color: var(--color-fs-secondary);
+    border: 1px solid var(--color-fs-border);
+    border-radius: var(--radius-btn);
+    cursor: pointer;
+    transition:
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+
+  .fs-btn-outline:hover {
+    border-color: #2d3f55;
+    color: var(--color-fs-muted);
+  }
+
+  /* --- Sidebar nav item — default --- */
+  .fs-nav-item {
+    padding: 9px 12px;
+    border-radius: var(--radius-btn);
+    color: var(--color-fs-secondary);
+    font-size: var(--font-size-caption);
+    cursor: pointer;
+    transition: color 150ms ease;
+  }
+
+  .fs-nav-item:hover {
+    color: var(--color-fs-muted);
+  }
+
+  /* --- Sidebar nav item — active --- */
+  .fs-nav-item-active {
+    background-color: rgba(245, 158, 11, 0.07);
+    border-left: 2px solid var(--color-fs-amber);
+    color: var(--color-fs-amber);
+    font-weight: 500;
+    padding-left: 10px; /* compensate for 2px border */
+  }
+
+  /* --- Sidebar section header --- */
+  .fs-sidebar-section {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-fs-faded);
+    padding: 0 20px;
+    margin-bottom: 8px;
+  }
+
+  /* --- Client row in sidebar --- */
+  .fs-client-row {
+    padding: 9px 12px;
+    border-radius: var(--radius-btn);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+
+  .fs-client-row:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  /* --- Health dot in sidebar --- */
+  .fs-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* --- Testimonial card --- */
+  .fs-testimonial {
+    background-color: transparent;
+    border: 1px solid var(--color-fs-border);
+    border-radius: var(--radius-card);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* --- Star rating (amber stars) --- */
+  .fs-stars {
+    display: flex;
+    gap: 2px;
+    color: var(--color-fs-amber);
+    font-size: 12px;
+  }
+
+  /* --- Pricing tier card --- */
+  .fs-pricing-card {
+    border: 1px solid var(--color-fs-border);
+    border-radius: var(--radius-card);
+    padding: 28px;
+  }
+
+  .fs-pricing-card-featured {
+    border: 1px solid var(--color-fs-amber);
+  }
+
+  /* --- Pricing feature row --- */
+  .fs-pricing-feature {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: var(--font-size-small);
+    color: var(--color-fs-secondary);
+  }
+
+  .fs-pricing-stripe {
+    width: 3px;
+    height: 14px;
+    background-color: var(--color-fs-border);
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .fs-pricing-stripe-amber {
+    background-color: var(--color-fs-amber);
+  }
+
+  /* --- How-it-works step number --- */
+  .fs-step-number {
+    font-family: var(--font-mono);
+    font-size: 4rem; /* 64px */
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    color: var(--color-fs-border); /* very dark, decorative */
+    line-height: 1;
+    flex-shrink: 0;
+    width: 80px;
+    user-select: none;
+  }
+
+  /* --- RunAnalysisButton states --- */
+  .fs-run-btn {
+    border: 1px solid var(--color-fs-amber-ring);
+    color: var(--color-fs-amber);
+    font-size: var(--font-size-caption);
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: var(--radius-btn);
+    background: transparent;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+  }
+
+  .fs-run-btn:hover {
+    background-color: var(--color-fs-amber-dim);
+  }
+
+  .fs-run-btn[data-state='loading'] {
+    opacity: 0.6;
+    cursor: wait;
+    pointer-events: none;
+  }
+
+  .fs-run-btn[data-state='success'] {
+    border-color: rgba(74, 222, 128, 0.4);
+    color: var(--color-fs-green);
+    background-color: rgba(74, 222, 128, 0.06);
+    pointer-events: none;
+  }
+
+  .fs-run-btn[data-state='error'] {
+    border-color: rgba(248, 113, 113, 0.4);
+    color: var(--color-fs-red);
+    background-color: var(--color-fs-red-bg);
+  }
+
+  /* --- Impact badge on recommendations --- */
+  .fs-impact-badge {
+    flex-shrink: 0;
+    text-align: right;
+    min-width: 60px;
+  }
+
+  /* --- Marketing hero amber highlight --- */
+  .fs-hero-highlight {
+    color: var(--color-fs-amber);
+  }
+
+  /* --- Amber pill / badge (nav, announcements) --- */
+  .fs-pill-amber {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--color-fs-amber-dim);
+    border: 1px solid var(--color-fs-amber-ring);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-label);
+    color: var(--color-fs-amber);
+    letter-spacing: 0.06em;
+  }
+
+  /* --- Page section divider --- */
+  .fs-section {
+    border-top: 1px solid var(--color-fs-border);
+    padding: 72px 48px;
+  }
+
+  /* --- Sidebar layout shell --- */
+  .fs-shell {
+    display: flex;
+    min-height: 100dvh;
+    background-color: var(--color-fs-bg);
+  }
+
+  .fs-sidebar {
+    width: var(--sidebar-width);
+    flex-shrink: 0;
+    background-color: var(--color-fs-sidebar);
+    border-right: 1px solid var(--color-fs-border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+  }
+
+  .fs-main {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+  }
+
+  /* --- Breadcrumb --- */
+  .fs-breadcrumb {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-label);
+    color: var(--color-fs-faded);
+    margin-bottom: 4px;
+  }
+
+  /* --- Inline health badge (header) — dot + score + label --- */
+  .fs-health-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: var(--radius-btn);
+    padding: 4px 10px;
+    font-size: var(--font-size-caption);
+  }
+
+  .fs-health-badge-green {
+    background-color: var(--color-fs-green-bg);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    color: var(--color-fs-green);
+  }
+
+  .fs-health-badge-yellow {
+    background-color: var(--color-fs-yellow-bg);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    color: var(--color-fs-yellow);
+  }
+
+  .fs-health-badge-red {
+    background-color: var(--color-fs-red-bg);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    color: var(--color-fs-red);
+  }
+
+  /* --- Metric card — danger variant (red border, anomaly signal) --- */
+  .fs-metric-card-danger {
+    background-color: var(--color-fs-surface);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    border-radius: var(--radius-card);
+    padding: 16px;
+  }
+
+  /* --- Metric sub-label (context line below number) --- */
+  .fs-metric-context {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    margin-top: 3px;
+  }
+
+  /* --- Pipeline chart bar --- */
+  .fs-pipeline-bar {
+    height: 24px;
+    background-color: var(--color-fs-green-bg);
+    border: 1px solid rgba(74, 222, 128, 0.15);
+    border-radius: var(--radius-tag);
+    display: flex;
+    align-items: center;
+    padding-left: 8px;
+    gap: 6px;
+  }
+
+  /* --- Pipeline bar — stalled stage --- */
+  .fs-pipeline-bar-stalled {
+    background-color: var(--color-fs-red-bg);
+    border-color: rgba(248, 113, 113, 0.25);
+  }
+
+  /* --- Pipeline stalled tag --- */
+  .fs-stalled-tag {
+    background-color: rgba(248, 113, 113, 0.2);
+    color: var(--color-fs-red);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* --- Recommendation card (inside report) --- */
+  .fs-rec-card {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 14px;
+    background-color: var(--color-fs-bg);
+    border: 1px solid var(--color-fs-border);
+    border-radius: var(--radius-btn);
+  }
+
+  .fs-rec-title {
+    color: var(--color-fs-primary);
+    font-size: var(--font-size-caption);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+
+  .fs-rec-body {
+    color: var(--color-fs-secondary);
+    font-size: var(--font-size-caption);
+    line-height: 1.55;
+  }
+
+  /* --- Status badge (completed / running / failed) --- */
+  .fs-status-completed {
+    background-color: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    color: var(--color-fs-green);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: var(--radius-tag);
+  }
+
+  .fs-status-running {
+    background-color: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    color: var(--color-fs-amber);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: var(--radius-tag);
+  }
+
+  .fs-status-failed {
+    background-color: var(--color-fs-red-bg);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    color: var(--color-fs-red);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: var(--radius-tag);
+  }
+
+  /* --- Sidebar active client (selected, not just hovered) --- */
+  .fs-client-row-active {
+    background-color: rgba(248, 113, 113, 0.07);
+    border: 1px solid rgba(248, 113, 113, 0.12);
+  }
+
+  .fs-client-row-active-green {
+    background-color: rgba(74, 222, 128, 0.05);
+    border: 1px solid rgba(74, 222, 128, 0.1);
+  }
+
+  /* --- Metric value — small variant (drilldown 2×2 cards) --- */
+  .fs-metric-sm {
+    font-family: var(--font-mono);
+    font-size: 1.375rem; /* 22px */
+    font-weight: 700;
+    letter-spacing: var(--tracking-tight);
+    color: var(--color-fs-primary);
+    line-height: 1;
+  }
+
+  /* --- Page header bar (shared across dashboard views) --- */
+  .fs-page-header {
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--color-fs-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* --- Stat row (4 inline metrics with vertical dividers) --- */
+  .fs-stat-row {
+    display: flex;
+    border-bottom: 1px solid var(--color-fs-border);
+  }
+
+  .fs-stat-cell {
+    flex: 1;
+    padding: 20px 24px;
+    border-right: 1px solid var(--color-fs-border);
+  }
+
+  .fs-stat-cell:first-child {
+    padding-left: 32px;
+  }
+
+  .fs-stat-cell:last-child {
+    border-right: none;
+  }
+
+  .fs-stat-label {
+    color: var(--color-fs-secondary);
+    font-size: 10px;
+    letter-spacing: var(--tracking-tag);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* --- Form input --- */
+  .fs-input {
+    width: 100%;
+    background-color: var(--color-fs-surface);
+    border: 1px solid var(--color-fs-border);
+    border-radius: var(--radius-input);
+    padding: 10px 14px;
+    color: var(--color-fs-primary);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-small);
+    line-height: 1.5;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .fs-input::placeholder {
+    color: var(--color-fs-faded);
+  }
+
+  .fs-input:focus-visible {
+    outline: none;
+    border-color: var(--color-fs-amber);
+    box-shadow: 0 0 0 2px var(--color-fs-amber-ring);
+  }
+
+  /* --- Form label --- */
+  .fs-input-label {
+    display: block;
+    color: var(--color-fs-secondary);
+    font-size: var(--font-size-caption);
+    font-family: var(--font-mono);
+    margin-bottom: 6px;
+  }
+}
