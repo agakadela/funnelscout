@@ -223,3 +223,5 @@ export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
     references: [organizations.id],
   }),
 }));
+
+export * from "./better-auth-schema";
