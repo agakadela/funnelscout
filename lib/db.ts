@@ -8,10 +8,9 @@ const globalForDb = globalThis as typeof globalThis & {
 };
 
 const client =
-  globalForDb.__funnelscoutPostgres ??
-  postgres(env.database.url, { max: 10 });
+  globalForDb.__funnelscoutPostgres ?? postgres(env.database.url, { max: 1 });
 
-if (process.env.NODE_ENV !== "production") {
+if (env.nodeEnv !== "production") {
   globalForDb.__funnelscoutPostgres = client;
 }
 
