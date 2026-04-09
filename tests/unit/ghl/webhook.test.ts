@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
 
 describe("ghl/webhook", () => {
-  it.todo("implemented with HMAC verification");
+  it.todo("webhook");
 });

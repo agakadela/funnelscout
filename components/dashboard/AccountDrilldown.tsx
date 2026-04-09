@@ -12,8 +12,8 @@ export function AccountDrilldown({ locationId }: AccountDrilldownProps) {
         className="text-fs-secondary"
         style={{ fontSize: "var(--font-size-small)" }}
       >
-        Location <span className="text-fs-primary font-mono">{locationId}</span>{" "}
-        — drill-down UI ships in later tasks.
+        Location <span className="font-mono text-fs-primary">{locationId}</span>
+        .
       </p>
     </div>
   );

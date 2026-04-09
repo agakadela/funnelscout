@@ -8,7 +8,7 @@ export function AgencyOverview() {
         className="text-fs-secondary"
         style={{ fontSize: "var(--font-size-small)" }}
       >
-        Connect GHL to populate this view (docs/ui.md empty state).
+        Connect GHL to populate this view.
       </p>
     </div>
   );

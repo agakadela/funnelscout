@@ -7,7 +7,6 @@ package-lock.json
 coverage
 drizzle/migrations
 
-# Docs and agent tooling use their own formatting; lint focuses on app code.
 .claude/
 docs/
 AGENTS.md
