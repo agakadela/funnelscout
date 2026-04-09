@@ -1,13 +1,7 @@
-import { NextResponse } from "next/server";
+import { serve } from "inngest/next";
+import { inngest, inngestFunctions } from "@/inngest/index";
 
-export async function GET() {
-  return NextResponse.json({ error: "Not configured." }, { status: 503 });
-}
-
-export async function PUT() {
-  return NextResponse.json({ error: "Not configured." }, { status: 503 });
-}
-
-export async function POST() {
-  return NextResponse.json({ error: "Not configured." }, { status: 503 });
-}
+export const { GET, POST, PUT } = serve({
+  client: inngest,
+  functions: inngestFunctions,
+});
