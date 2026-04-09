@@ -1,6 +1,14 @@
 import { z } from "zod";
 
 const envSchema = z.object({
+  NODE_ENV: z.preprocess(
+    (val: unknown) => {
+      if (val === "production") return "production";
+      if (val === "test") return "test";
+      return "development";
+    },
+    z.enum(["development", "production", "test"]),
+  ),
   GHL_CLIENT_ID: z.string().min(1),
   GHL_CLIENT_SECRET: z.string().min(1),
   GHL_WEBHOOK_SECRET: z.string().min(1),
@@ -14,7 +22,13 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(1),
   BETTER_AUTH_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
-  GHL_TOKEN_ENCRYPTION_KEY: z.string().length(64),
+  GHL_TOKEN_ENCRYPTION_KEY: z
+    .string()
+    .length(64)
+    .refine((key) => !/^0{64}$/.test(key), {
+      message:
+        "GHL_TOKEN_ENCRYPTION_KEY must not be all zeros — use: openssl rand -hex 32",
+    }),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -29,6 +43,7 @@ if (!parsed.success) {
 const _env = parsed.data;
 
 export const env = {
+  nodeEnv: _env.NODE_ENV,
   ghl: {
     clientId: _env.GHL_CLIENT_ID,
     clientSecret: _env.GHL_CLIENT_SECRET,
