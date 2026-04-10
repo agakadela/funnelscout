@@ -1,0 +1,1 @@
+ALTER TABLE "analyses" ADD CONSTRAINT "analyses_sub_account_period_start_unique" UNIQUE("sub_account_id","period_start");

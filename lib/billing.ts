@@ -30,7 +30,9 @@ export type PlanLimitResult =
       reason: "no_subscription" | "subscription_inactive" | "limit_reached";
     };
 
-export function evaluatePlanLimit(input: PlanLimitEvaluationInput): PlanLimitResult {
+export function evaluatePlanLimit(
+  input: PlanLimitEvaluationInput,
+): PlanLimitResult {
   if (input.subscription === null) {
     return { allowed: false, reason: "no_subscription" };
   }
@@ -58,7 +60,9 @@ export async function countActiveSubAccountsForOrg(
   return Number(row?.n ?? 0);
 }
 
-export async function checkPlanLimit(organizationId: string): Promise<PlanLimitResult> {
+export async function checkPlanLimit(
+  organizationId: string,
+): Promise<PlanLimitResult> {
   const [subRow] = await db
     .select({
       status: subscriptions.status,
@@ -72,7 +76,8 @@ export async function checkPlanLimit(organizationId: string): Promise<PlanLimitR
     ? { status: subRow.status, subAccountLimit: subRow.subAccountLimit }
     : null;
 
-  const activeSubAccountCount = await countActiveSubAccountsForOrg(organizationId);
+  const activeSubAccountCount =
+    await countActiveSubAccountsForOrg(organizationId);
 
   return evaluatePlanLimit({ subscription, activeSubAccountCount });
 }

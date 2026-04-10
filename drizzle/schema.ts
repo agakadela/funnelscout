@@ -119,6 +119,10 @@ export const analyses = pgTable(
   (t) => [
     index("analyses_sub_account_created_idx").on(t.subAccountId, t.createdAt),
     index("analyses_org_created_idx").on(t.organizationId, t.createdAt),
+    unique("analyses_sub_account_period_start_unique").on(
+      t.subAccountId,
+      t.periodStart,
+    ),
   ],
 );
 
