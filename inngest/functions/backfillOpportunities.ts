@@ -1,4 +1,5 @@
-import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { and, eq } from "drizzle-orm";
 import {
   opportunityEvents,
   organizations,
@@ -9,9 +10,9 @@ import { fetchCompanyLocations, fetchOpportunities } from "@/lib/ghl/client";
 import type { GhlOpportunityRecord } from "@/lib/ghl/types";
 import { inngest } from "@/inngest/client";
 
-type OAuthConnectedData = {
-  organizationId: string;
-};
+const OAuthConnectedDataSchema = z.object({
+  organizationId: z.string(),
+});
 
 function threeMonthsAgo(): Date {
   const d = new Date();
@@ -57,7 +58,12 @@ export const backfillOpportunities = inngest.createFunction(
   { id: "backfill-opportunities", name: "Backfill GHL opportunities" },
   { event: "ghl/oauth.connected" },
   async ({ event, step }) => {
-    const { organizationId } = event.data as OAuthConnectedData;
+    const dataParsed = OAuthConnectedDataSchema.safeParse(event.data);
+    if (!dataParsed.success) {
+      console.error("backfillOpportunities: invalid event data", dataParsed.error.flatten());
+      return { skipped: true as const, reason: "invalid_payload" as const };
+    }
+    const { organizationId } = dataParsed.data;
 
     const org = await step.run("load-organization", async () => {
       const row = await db.query.organizations.findFirst({
@@ -100,16 +106,20 @@ export const backfillOpportunities = inngest.createFunction(
     for (const loc of locations) {
       await step.run(`backfill-${loc.id}`, async () => {
         const sub = await db.query.subAccounts.findFirst({
-          where: eq(subAccounts.ghlLocationId, loc.id),
+          where: and(
+            eq(subAccounts.organizationId, organizationId),
+            eq(subAccounts.ghlLocationId, loc.id),
+          ),
         });
         if (!sub) return;
         const opps = await fetchOpportunities(organizationId, loc.id, since);
-        for (const opp of opps) {
-          const row = mapApiOpportunityToRow(sub.id, opp);
-          if (!row) continue;
+        const rows = opps
+          .map((opp) => mapApiOpportunityToRow(sub.id, opp))
+          .filter((r): r is NonNullable<typeof r> => r !== null);
+        if (rows.length > 0) {
           await db
             .insert(opportunityEvents)
-            .values(row)
+            .values(rows)
             .onConflictDoNothing({
               target: [
                 opportunityEvents.ghlOpportunityId,

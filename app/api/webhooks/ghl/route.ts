@@ -4,11 +4,7 @@ import { GHLWebhookEventSchema } from "@/lib/ghl/types";
 import { inngest } from "@/inngest/client";
 
 function getSignatureHeader(request: NextRequest): string {
-  return (
-    request.headers.get("x-ghl-signature") ??
-    request.headers.get("X-GHL-Signature") ??
-    ""
-  );
+  return request.headers.get("x-ghl-signature") ?? "";
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {

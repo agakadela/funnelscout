@@ -1,20 +1,26 @@
+import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { opportunityEvents, subAccounts } from "@/drizzle/schema";
 import { db } from "@/lib/db";
 import { mapGhlWebhookToOpportunityEvent } from "@/lib/ghl/map-webhook-to-event";
-import type { GHLWebhookEvent } from "@/lib/ghl/types";
+import { GHLWebhookEventSchema } from "@/lib/ghl/types";
 import { inngest } from "@/inngest/client";
 
-type WebhookReceivedData = {
-  event: GHLWebhookEvent;
-  receivedAt: string;
-};
+const WebhookReceivedDataSchema = z.object({
+  event: GHLWebhookEventSchema,
+  receivedAt: z.string(),
+});
 
 export const ingestWebhook = inngest.createFunction(
   { id: "ingest-ghl-webhook", name: "Ingest GHL webhook" },
   { event: "ghl/webhook.received" },
   async ({ event }) => {
-    const { event: ghlEvent } = event.data as WebhookReceivedData;
+    const parsed = WebhookReceivedDataSchema.safeParse(event.data);
+    if (!parsed.success) {
+      console.error("ingestWebhook: invalid event data", parsed.error.flatten());
+      return { skipped: true as const, reason: "invalid_payload" as const };
+    }
+    const { event: ghlEvent } = parsed.data;
 
     const sub = await db.query.subAccounts.findFirst({
       where: eq(subAccounts.ghlLocationId, ghlEvent.locationId),

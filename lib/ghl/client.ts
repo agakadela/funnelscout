@@ -66,7 +66,6 @@ async function persistRefreshedTokens(
       ghlAccessToken: encryptGhlToken(accessToken),
       ghlRefreshToken: encryptGhlToken(refreshToken),
       ghlTokenExpiresAt: expiresAt,
-      updatedAt: new Date(),
     })
     .where(eq(organizations.id, organizationId));
 }
@@ -78,7 +77,6 @@ async function markOrgGhlDisconnected(organizationId: string): Promise<void> {
       ghlAccessToken: null,
       ghlRefreshToken: null,
       ghlTokenExpiresAt: null,
-      updatedAt: new Date(),
     })
     .where(eq(organizations.id, organizationId));
 }
@@ -154,6 +152,7 @@ export async function fetchCompanyLocations(
   }
   const parsed = GhlLocationSearchResponseSchema.safeParse(json);
   if (!parsed.success) {
+    console.error("GHL locations response failed validation", parsed.error.flatten());
     return [];
   }
   return (parsed.data.locations ?? []).map((loc) => ({
@@ -193,6 +192,9 @@ export async function fetchOpportunities(
       throw new Error("GHL opportunities search returned non-JSON");
     }
     const parsed = GhlOpportunitySearchResponseSchema.safeParse(json);
+    if (!parsed.success) {
+      console.error("GHL opportunities response failed validation", parsed.error.flatten());
+    }
     const batch = parsed.success ? (parsed.data.opportunities ?? []) : [];
     for (const opp of batch) {
       const createdRaw = opp.createdAt ?? opp.created_at;

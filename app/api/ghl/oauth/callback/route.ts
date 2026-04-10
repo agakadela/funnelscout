@@ -99,10 +99,15 @@ export async function GET(request: NextRequest) {
     return errorRedirect(request, "organization_upsert_failed");
   }
 
-  await inngest.send({
-    name: "ghl/oauth.connected",
-    data: { organizationId },
-  });
+  try {
+    await inngest.send({
+      id: `ghl-oauth-connected-${organizationId}`,
+      name: "ghl/oauth.connected",
+      data: { organizationId },
+    });
+  } catch {
+    // Tokens saved — redirect anyway; backfill will require manual re-trigger
+  }
 
   return NextResponse.redirect(new URL("/dashboard", request.nextUrl.origin));
 }

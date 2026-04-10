@@ -201,7 +201,7 @@ export async function exchangeAuthorizationCode(
   });
   const text = await res.text();
   if (!res.ok) {
-    throw new Error(`GHL token exchange failed: ${res.status} ${text}`);
+    throw new Error(`GHL token exchange failed: ${res.status}`);
   }
   let json: unknown;
   try {
@@ -232,7 +232,7 @@ export async function refreshAccessToken(
   });
   const text = await res.text();
   if (!res.ok) {
-    throw new Error(`GHL token refresh failed: ${res.status} ${text}`);
+    throw new Error(`GHL token refresh failed: ${res.status}`);
   }
   let json: unknown;
   try {
