@@ -9,6 +9,8 @@ export default defineConfig({
     globals: true,
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
     setupFiles: ["tests/setup-env.ts"],
+    clearMocks: true,
+    mockReset: true,
   },
   resolve: {
     alias: {

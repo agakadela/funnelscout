@@ -152,7 +152,10 @@ export async function fetchCompanyLocations(
   }
   const parsed = GhlLocationSearchResponseSchema.safeParse(json);
   if (!parsed.success) {
-    console.error("GHL locations response failed validation", parsed.error.flatten());
+    console.error(
+      "GHL locations response failed validation",
+      parsed.error.flatten(),
+    );
     return [];
   }
   return (parsed.data.locations ?? []).map((loc) => ({
@@ -193,7 +196,10 @@ export async function fetchOpportunities(
     }
     const parsed = GhlOpportunitySearchResponseSchema.safeParse(json);
     if (!parsed.success) {
-      console.error("GHL opportunities response failed validation", parsed.error.flatten());
+      console.error(
+        "GHL opportunities response failed validation",
+        parsed.error.flatten(),
+      );
     }
     const batch = parsed.success ? (parsed.data.opportunities ?? []) : [];
     for (const opp of batch) {
