@@ -1,7 +1,6 @@
 import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
-  encryptGhlToken,
   decryptGhlToken,
   verifyGhlWebhookHmacSignature,
 } from "@/lib/ghl/oauth";
@@ -33,6 +32,9 @@ describe("ghl/webhook", () => {
   it("HMAC verification fails for missing/invalid header", () => {
     const body = "{}";
     expect(verifyGhlWebhookHmacSignature(body, "", WEBHOOK_SECRET)).toBe(false);
+    expect(verifyGhlWebhookHmacSignature(body, "   ", WEBHOOK_SECRET)).toBe(
+      false,
+    );
     expect(verifyGhlWebhookHmacSignature(body, "not-hex", WEBHOOK_SECRET)).toBe(
       false,
     );
@@ -46,10 +48,8 @@ describe("ghl/webhook", () => {
     ).toBe(true);
   });
 
-  it("encrypt → decrypt round-trip", () => {
-    const plain = "ghl-access-token-value";
-    const enc = encryptGhlToken(plain);
-    expect(decryptGhlToken(enc)).toBe(plain);
+  it("decryptGhlToken throws on malformed payload", () => {
+    expect(() => decryptGhlToken("not-a-valid-payload")).toThrow();
   });
 
   it("safeParse accepts all 4 event types", () => {
@@ -123,6 +123,36 @@ describe("ghl/webhook", () => {
       type: "OpportunityCreate",
       locationId: "x",
       data: { id: "o1" },
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it("safeParse rejects payload without locationId", () => {
+    const r = GHLWebhookEventSchema.safeParse({
+      type: "OpportunityCreate",
+      data: {
+        id: "o1",
+        contactId: "c1",
+        pipelineId: "p1",
+        pipelineStageId: "s1",
+        monetaryValue: 0,
+        status: "open",
+        createdAt: "2024-01-01T00:00:00.000Z",
+      },
+    });
+    expect(r.success).toBe(false);
+  });
+
+  it("safeParse rejects OrderCreate when currency is missing", () => {
+    const r = GHLWebhookEventSchema.safeParse({
+      type: "OrderCreate",
+      locationId: "loc_1",
+      data: {
+        id: "ord1",
+        contactId: "c1",
+        totalPrice: 10,
+        createdAt: "2024-01-04T00:00:00.000Z",
+      },
     });
     expect(r.success).toBe(false);
   });

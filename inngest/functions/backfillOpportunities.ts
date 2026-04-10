@@ -60,7 +60,10 @@ export const backfillOpportunities = inngest.createFunction(
   async ({ event, step }) => {
     const dataParsed = OAuthConnectedDataSchema.safeParse(event.data);
     if (!dataParsed.success) {
-      console.error("backfillOpportunities: invalid event data", dataParsed.error.flatten());
+      console.error(
+        "backfillOpportunities: invalid event data",
+        dataParsed.error.flatten(),
+      );
       return { skipped: true as const, reason: "invalid_payload" as const };
     }
     const { organizationId } = dataParsed.data;
