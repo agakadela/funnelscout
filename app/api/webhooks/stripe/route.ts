@@ -2,7 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
 import type Stripe from "stripe";
 import { z } from "zod";
-import { BillingPlanSchema, PLAN_LIMITS, type BillingPlan } from "@/lib/billing";
+import {
+  BillingPlanSchema,
+  PLAN_LIMITS,
+  type BillingPlan,
+} from "@/lib/billing";
 import { organizations, subscriptions } from "@/drizzle/schema";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
@@ -75,7 +79,10 @@ async function handleCheckoutSessionCompleted(
 ): Promise<NextResponse> {
   const meta = billingMetadataSchema.safeParse(session.metadata ?? {});
   if (!meta.success) {
-    return NextResponse.json({ error: "Invalid checkout metadata" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid checkout metadata" },
+      { status: 400 },
+    );
   }
 
   const [org] = await db
@@ -85,7 +92,10 @@ async function handleCheckoutSessionCompleted(
     .limit(1);
 
   if (!org) {
-    return NextResponse.json({ error: "Organization not found" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Organization not found" },
+      { status: 400 },
+    );
   }
 
   const customerId =
@@ -133,7 +143,9 @@ async function handleCheckoutSessionCompleted(
 async function handleSubscriptionUpdated(
   subscription: Stripe.Subscription,
 ): Promise<NextResponse> {
-  const meta = subscriptionMetadataSchema.safeParse(subscription.metadata ?? {});
+  const meta = subscriptionMetadataSchema.safeParse(
+    subscription.metadata ?? {},
+  );
   if (!meta.success) {
     return NextResponse.json({ ok: true }, { status: 200 });
   }
@@ -206,7 +218,9 @@ async function handleSubscriptionUpdated(
 async function handleSubscriptionDeleted(
   subscription: Stripe.Subscription,
 ): Promise<NextResponse> {
-  const meta = subscriptionMetadataSchema.safeParse(subscription.metadata ?? {});
+  const meta = subscriptionMetadataSchema.safeParse(
+    subscription.metadata ?? {},
+  );
   if (!meta.success) {
     return NextResponse.json({ ok: true }, { status: 200 });
   }
