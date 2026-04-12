@@ -36,8 +36,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-const nextConfig: NextConfig = {};
-
 export default withSentryConfig(nextConfig, {
   silent: true,
   org: env.sentry.org,
