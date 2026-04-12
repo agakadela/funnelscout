@@ -174,6 +174,12 @@ export default function MarketingHomePage() {
           >
             Create your workspace
           </Link>
+          <p
+            className="mx-auto mt-4 max-w-md text-fs-faded"
+            style={{ fontSize: "var(--font-size-caption)", lineHeight: 1.5 }}
+          >
+            Free to connect. No credit card required.
+          </p>
         </div>
       </section>
     </main>

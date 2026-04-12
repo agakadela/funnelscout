@@ -37,6 +37,12 @@ export type PipelineMetricsSnapshot = {
   sumMonetaryValue: number;
 };
 
+export function isPipelineMetricsSnapshot(
+  value: unknown,
+): value is PipelineMetricsSnapshot {
+  return PipelineMetricsSnapshotSchema.safeParse(value).success;
+}
+
 export function buildPipelineMetricsSnapshot(input: {
   periodStart: Date;
   periodEnd: Date;

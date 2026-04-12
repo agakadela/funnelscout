@@ -1,10 +1,9 @@
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { AccountDrilldown } from "@/components/dashboard/AccountDrilldown";
 import { HealthScoreBadge } from "@/components/dashboard/HealthScoreBadge";
 import { RunAnalysisButton } from "@/components/dashboard/RunAnalysisButton";
-import { auth } from "@/lib/auth";
+import { getCachedAuthSession } from "@/lib/auth-session";
 import { loadAccountDrilldownData } from "@/lib/dashboard/load-account-drilldown";
 
 type AccountPageProps = {
@@ -13,9 +12,7 @@ type AccountPageProps = {
 
 export default async function AccountPage({ params }: AccountPageProps) {
   const { locationId } = await params;
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getCachedAuthSession();
   if (!session?.session) {
     redirect("/sign-in");
   }

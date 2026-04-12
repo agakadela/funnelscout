@@ -1,12 +1,10 @@
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+
+import { getCachedAuthSession } from "@/lib/auth-session";
 import { buildGhlAuthorizeUrl, createSignedOAuthState } from "@/lib/ghl/oauth";
 
 export async function GET() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getCachedAuthSession();
   if (!session?.session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

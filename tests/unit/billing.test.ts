@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { evaluatePlanLimit } from "@/lib/billing";
+import {
+  planPriceDisplayUsd,
+  PLAN_CHECKOUT_AMOUNT_USD_CENTS,
+} from "@/lib/billing-plans";
 
 describe("evaluatePlanLimit", () => {
   const activeSubscription = { status: "active", subAccountLimit: 5 };
@@ -47,5 +51,14 @@ describe("evaluatePlanLimit", () => {
         activeSubAccountCount: 0,
       }),
     ).toEqual({ allowed: false, reason: "no_subscription" });
+  });
+});
+
+describe("planPriceDisplayUsd", () => {
+  it("formats whole-dollar monthly prices from PLAN_CHECKOUT_AMOUNT_USD_CENTS", () => {
+    expect(planPriceDisplayUsd("starter")).toBe("$49");
+    expect(planPriceDisplayUsd("agency")).toBe("$99");
+    expect(planPriceDisplayUsd("pro")).toBe("$199");
+    expect(PLAN_CHECKOUT_AMOUNT_USD_CENTS.starter).toBe(4900);
   });
 });

@@ -1,18 +1,17 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
-import { headers } from "next/headers";
+import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { organization as baOrganization } from "@/drizzle/better-auth-schema";
-import { analyses, organizations, subAccounts } from "@/drizzle/schema";
-import { auth } from "@/lib/auth";
+import { organizations } from "@/drizzle/schema";
+import { getCachedAuthSession } from "@/lib/auth-session";
 import { db } from "@/lib/db";
 import {
   healthScoreFromPipelineSnapshot,
   healthTier,
 } from "@/lib/dashboard/health-score";
-import { isPipelineMetricsSnapshot } from "@/lib/dashboard/load-agency-overview";
+import { loadSubAccountsMetricsContext } from "@/lib/dashboard/load-sub-accounts-metrics-context";
 
 function sidebarInitials(name: string, email: string): string {
   const n = name.trim();
@@ -32,9 +31,7 @@ export default async function AppLayout({
 }: Readonly<{
   children: ReactNode;
 }>) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getCachedAuthSession();
 
   if (!session?.session) {
     redirect("/sign-in");
@@ -74,48 +71,19 @@ export default async function AppLayout({
   }> = [];
 
   if (orgRow && ghlConnected) {
-    const subs = await db.query.subAccounts.findMany({
-      where: and(
-        eq(subAccounts.organizationId, orgRow.id),
-        eq(subAccounts.isActive, true),
-      ),
-    });
-
-    const subIds = subs.map((s) => s.id);
-    const analysisRows =
-      subIds.length === 0
-        ? []
-        : await db.query.analyses.findMany({
-            where: and(
-              eq(analyses.organizationId, orgRow.id),
-              eq(analyses.status, "completed"),
-              inArray(analyses.subAccountId, subIds),
-            ),
-            orderBy: [desc(analyses.createdAt)],
-          });
-
-    const latestBySub = new Map<string, (typeof analysisRows)[number]>();
-    for (const row of analysisRows) {
-      if (!latestBySub.has(row.subAccountId)) {
-        latestBySub.set(row.subAccountId, row);
-      }
-    }
-
-    sidebarClients = subs.map((sub) => {
-      const latest = latestBySub.get(sub.id);
-      const snap = latest?.metricsJson;
-      const score = isPipelineMetricsSnapshot(snap)
-        ? healthScoreFromPipelineSnapshot(snap)
+    const contexts = await loadSubAccountsMetricsContext(orgRow.id);
+    sidebarClients = contexts.map((ctx) => {
+      const score = ctx.snapshot
+        ? healthScoreFromPipelineSnapshot(ctx.snapshot)
         : 50;
       return {
-        id: sub.id,
-        name: sub.name,
-        ghlLocationId: sub.ghlLocationId,
+        id: ctx.id,
+        name: ctx.name,
+        ghlLocationId: ctx.ghlLocationId,
         healthTier: healthTier(score),
         healthScore: score,
       };
     });
-
     sidebarClients.sort((a, b) => b.healthScore - a.healthScore);
   }
 

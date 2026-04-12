@@ -2,10 +2,12 @@ import { and, desc, eq } from "drizzle-orm";
 
 import type { AnalysisReport } from "@/lib/ai/types";
 import { AnalysisReportSchema } from "@/lib/ai/types";
+import {
+  isPipelineMetricsSnapshot,
+  type PipelineMetricsSnapshot,
+} from "@/lib/analysis/metrics";
 import { analyses, organizations, subAccounts } from "@/drizzle/schema";
 import { db } from "@/lib/db";
-import type { PipelineMetricsSnapshot } from "@/lib/analysis/metrics";
-import { isPipelineMetricsSnapshot } from "@/lib/dashboard/load-agency-overview";
 import {
   healthScoreFromPipelineSnapshot,
   healthTier,

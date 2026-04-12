@@ -1,19 +1,16 @@
 import { and, count, eq } from "drizzle-orm";
-import { z } from "zod";
+
 import { subAccounts, subscriptions } from "@/drizzle/schema";
 import { db } from "@/lib/db";
 
-// pro uses 999 as a practical "unlimited" sentinel; the DB column is integer
-// so Infinity cannot be stored.
-export const PLAN_LIMITS = {
-  starter: 5,
-  agency: 15,
-  pro: 999,
-} as const;
-
-export type BillingPlan = keyof typeof PLAN_LIMITS;
-
-export const BillingPlanSchema = z.enum(["starter", "agency", "pro"]);
+export {
+  BillingPlanSchema,
+  type BillingPlan,
+  PLAN_CHECKOUT_AMOUNT_USD_CENTS,
+  PLAN_CHECKOUT_PRODUCT_LABEL,
+  PLAN_LIMITS,
+  planPriceDisplayUsd,
+} from "@/lib/billing-plans";
 
 export type PlanLimitEvaluationInput = {
   subscription: {

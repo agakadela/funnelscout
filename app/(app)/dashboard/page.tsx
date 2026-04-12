@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import {
@@ -7,13 +6,11 @@ import {
 } from "@/components/dashboard/AgencyOverview";
 import { NoGhlConnectPanel } from "@/components/dashboard/NoGhlConnectPanel";
 import { RunAnalysisButton } from "@/components/dashboard/RunAnalysisButton";
-import { auth } from "@/lib/auth";
+import { getCachedAuthSession } from "@/lib/auth-session";
 import { loadAgencyOverviewData } from "@/lib/dashboard/load-agency-overview";
 
 export default async function DashboardPage() {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getCachedAuthSession();
   if (!session?.session) {
     redirect("/sign-in");
   }

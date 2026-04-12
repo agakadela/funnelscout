@@ -1,10 +1,7 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-import {
-  PipelineMetricsSnapshotSchema,
-  type PipelineMetricsSnapshot,
-} from "@/lib/analysis/metrics";
-import { analyses, organizations, subAccounts } from "@/drizzle/schema";
+import type { PipelineMetricsSnapshot } from "@/lib/analysis/metrics";
+import { organizations } from "@/drizzle/schema";
 import { db } from "@/lib/db";
 import { formatPercentRatio } from "@/lib/dashboard/format";
 import { getLastCompletedAnalysisLabelForBetterAuthOrg } from "@/lib/dashboard/last-analysis";
@@ -13,6 +10,7 @@ import {
   healthTier,
   stalledDealCount,
 } from "@/lib/dashboard/health-score";
+import { loadSubAccountsMetricsContext } from "@/lib/dashboard/load-sub-accounts-metrics-context";
 
 export type AgencyOverviewClientRow = {
   id: string;
@@ -49,18 +47,43 @@ export type AgencyOverviewData =
       lastCompletedAnalysisLabel: string | null;
     };
 
-export function isPipelineMetricsSnapshot(
-  value: unknown,
-): value is PipelineMetricsSnapshot {
-  return PipelineMetricsSnapshotSchema.safeParse(value).success;
-}
-
 const EMPTY_STATS: AgencyOverviewStats = {
   totalPipelineUsd: 0,
   openDeals: 0,
   avgConversionLabel: "—",
   atRiskPipelineUsd: 0,
 };
+
+function clientRowFromSnapshot(ctx: {
+  id: string;
+  name: string;
+  ghlLocationId: string;
+  snapshot: PipelineMetricsSnapshot | null;
+}): AgencyOverviewClientRow {
+  const snapshot = ctx.snapshot;
+  const pipelineUsd = snapshot?.sumMonetaryValue ?? 0;
+  const dealCount = snapshot?.uniqueOpportunityCount ?? 0;
+  const won = snapshot?.statusCounts["won"] ?? 0;
+  const lost = snapshot?.statusCounts["lost"] ?? 0;
+  const closed = won + lost;
+  const conversion = closed === 0 ? 0 : Math.min(1, Math.max(0, won / closed));
+
+  const healthScore = snapshot ? healthScoreFromPipelineSnapshot(snapshot) : 50;
+  const tier = healthTier(healthScore);
+  const stalled = snapshot ? stalledDealCount(snapshot) : 0;
+
+  return {
+    id: ctx.id,
+    name: ctx.name,
+    ghlLocationId: ctx.ghlLocationId,
+    pipelineUsd,
+    dealCount,
+    conversionLabel: formatPercentRatio(conversion),
+    healthScore,
+    healthTier: tier,
+    stalledDeals: stalled,
+  };
+}
 
 export async function loadAgencyOverviewData(input: {
   betterAuthOrganizationId: string;
@@ -85,15 +108,9 @@ export async function loadAgencyOverviewData(input: {
       input.betterAuthOrganizationId,
     );
 
-  const subs = await db.query.subAccounts.findMany({
-    where: and(
-      eq(subAccounts.organizationId, orgRow.id),
-      eq(subAccounts.isActive, true),
-    ),
-    orderBy: [desc(subAccounts.createdAt)],
-  });
+  const contexts = await loadSubAccountsMetricsContext(orgRow.id);
 
-  if (subs.length === 0) {
+  if (contexts.length === 0) {
     return {
       kind: "no_clients",
       stats: EMPTY_STATS,
@@ -101,60 +118,13 @@ export async function loadAgencyOverviewData(input: {
     };
   }
 
-  const subIds = subs.map((s) => s.id);
+  const snapshotBySubId = new Map(
+    contexts.map((c) => [c.id, c.snapshot] as const),
+  );
 
-  const analysisRows =
-    subIds.length === 0
-      ? []
-      : await db.query.analyses.findMany({
-          where: and(
-            eq(analyses.organizationId, orgRow.id),
-            eq(analyses.status, "completed"),
-            inArray(analyses.subAccountId, subIds),
-          ),
-          orderBy: [desc(analyses.createdAt)],
-        });
-
-  const latestBySub = new Map<string, (typeof analysisRows)[number]>();
-  for (const row of analysisRows) {
-    if (!latestBySub.has(row.subAccountId)) {
-      latestBySub.set(row.subAccountId, row);
-    }
-  }
-
-  const clients: AgencyOverviewClientRow[] = subs.map((sub) => {
-    const latest = latestBySub.get(sub.id);
-    const metricsUnknown = latest?.metricsJson;
-    const snapshot = isPipelineMetricsSnapshot(metricsUnknown)
-      ? metricsUnknown
-      : null;
-
-    const pipelineUsd = snapshot?.sumMonetaryValue ?? 0;
-    const dealCount = snapshot?.uniqueOpportunityCount ?? 0;
-    const won = snapshot?.statusCounts["won"] ?? 0;
-    const lost = snapshot?.statusCounts["lost"] ?? 0;
-    const closed = won + lost;
-    const conversion =
-      closed === 0 ? 0 : Math.min(1, Math.max(0, won / closed));
-
-    const healthScore = snapshot
-      ? healthScoreFromPipelineSnapshot(snapshot)
-      : 50;
-    const tier = healthTier(healthScore);
-    const stalled = snapshot ? stalledDealCount(snapshot) : 0;
-
-    return {
-      id: sub.id,
-      name: sub.name,
-      ghlLocationId: sub.ghlLocationId,
-      pipelineUsd,
-      dealCount,
-      conversionLabel: formatPercentRatio(conversion),
-      healthScore,
-      healthTier: tier,
-      stalledDeals: stalled,
-    };
-  });
+  const clients: AgencyOverviewClientRow[] = contexts.map((ctx) =>
+    clientRowFromSnapshot(ctx),
+  );
 
   clients.sort((a, b) => b.healthScore - a.healthScore);
 
@@ -166,9 +136,8 @@ export async function loadAgencyOverviewData(input: {
 
   for (const c of clients) {
     totalPipelineUsd += c.pipelineUsd;
-    const latest = latestBySub.get(c.id);
-    const snap = latest?.metricsJson;
-    if (isPipelineMetricsSnapshot(snap)) {
+    const snap = snapshotBySubId.get(c.id);
+    if (snap) {
       openDeals += snap.statusCounts["open"] ?? 0;
       const won = snap.statusCounts["won"] ?? 0;
       const lost = snap.statusCounts["lost"] ?? 0;
@@ -183,8 +152,8 @@ export async function loadAgencyOverviewData(input: {
   const avgConversion =
     convDenominator === 0 ? 0 : convNumerator / convDenominator;
 
-  const runAnalysisSubAccountId =
-    clients.length > 0 ? clients[clients.length - 1].id : null;
+  const lowestHealthClient = clients.at(-1);
+  const runAnalysisSubAccountId = lowestHealthClient?.id ?? null;
 
   return {
     kind: "ready",

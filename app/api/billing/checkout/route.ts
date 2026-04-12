@@ -1,9 +1,12 @@
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { auth } from "@/lib/auth";
-import { BillingPlanSchema } from "@/lib/billing";
+import {
+  BillingPlanSchema,
+  PLAN_CHECKOUT_AMOUNT_USD_CENTS,
+  PLAN_CHECKOUT_PRODUCT_LABEL,
+} from "@/lib/billing";
+import { getCachedAuthSession } from "@/lib/auth-session";
 import { env } from "@/lib/env";
 import { stripe } from "@/lib/stripe";
 import { ensureAppOrganizationForBetterAuthOrg } from "@/lib/workspace-org";
@@ -12,22 +15,8 @@ const CheckoutBodySchema = z.object({
   plan: BillingPlanSchema,
 });
 
-const PLAN_LABEL: Record<z.infer<typeof BillingPlanSchema>, string> = {
-  starter: "FunnelScout Starter",
-  agency: "FunnelScout Agency",
-  pro: "FunnelScout Pro",
-};
-
-const PLAN_AMOUNT_CENTS: Record<z.infer<typeof BillingPlanSchema>, number> = {
-  starter: 4900,
-  agency: 9900,
-  pro: 19900,
-};
-
 export async function POST(req: Request) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getCachedAuthSession();
 
   if (!session?.session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -77,10 +66,10 @@ export async function POST(req: Request) {
         quantity: 1,
         price_data: {
           currency: "usd",
-          unit_amount: PLAN_AMOUNT_CENTS[plan],
+          unit_amount: PLAN_CHECKOUT_AMOUNT_USD_CENTS[plan],
           recurring: { interval: "month" },
           product_data: {
-            name: PLAN_LABEL[plan],
+            name: PLAN_CHECKOUT_PRODUCT_LABEL[plan],
           },
         },
       },

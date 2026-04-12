@@ -20,19 +20,27 @@ export function Hero() {
           client—what moved, what stalled, and a short list of high-impact
           moves, with numbers next to the actions that matter.
         </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <Link
-            href="/sign-up"
-            className="fs-btn-primary px-6 py-3 no-underline"
+        <div className="mt-10 flex flex-col items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              href="/sign-up"
+              className="fs-btn-primary px-6 py-3 no-underline"
+            >
+              Start free
+            </Link>
+            <Link
+              href="/pricing"
+              className="fs-btn-outline px-6 py-3 no-underline"
+            >
+              View pricing
+            </Link>
+          </div>
+          <p
+            className="max-w-md text-center text-fs-faded"
+            style={{ fontSize: "var(--font-size-caption)", lineHeight: 1.5 }}
           >
-            Start free
-          </Link>
-          <Link
-            href="/pricing"
-            className="fs-btn-outline px-6 py-3 no-underline"
-          >
-            View pricing
-          </Link>
+            No credit card. 5-minute setup. Cancel anytime.
+          </p>
         </div>
       </div>
     </section>

@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 
-import type { BillingPlan } from "@/lib/billing";
+import type { BillingPlan } from "@/lib/billing-plans";
+import { PLAN_LIMITS, planPriceDisplayUsd } from "@/lib/billing-plans";
+import { isStripeHostedCheckoutUrl } from "@/lib/stripe-checkout-url";
 
 const TIERS: Array<{
   plan: BillingPlan;
   name: string;
-  price: string;
   description: string;
   features: string[];
   featured?: boolean;
@@ -15,8 +16,7 @@ const TIERS: Array<{
   {
     plan: "starter",
     name: "Starter",
-    price: "$49",
-    description: "Up to 5 sub-accounts",
+    description: `Up to ${PLAN_LIMITS.starter} sub-accounts`,
     features: [
       "Weekly analysis for each sub-account",
       "Monday email digest",
@@ -27,8 +27,7 @@ const TIERS: Array<{
   {
     plan: "agency",
     name: "Agency",
-    price: "$99",
-    description: "Up to 15 sub-accounts",
+    description: `Up to ${PLAN_LIMITS.agency} sub-accounts`,
     features: [
       "Weekly analysis for each sub-account",
       "Priority email digest",
@@ -40,8 +39,7 @@ const TIERS: Array<{
   {
     plan: "pro",
     name: "Pro",
-    price: "$199",
-    description: "Up to 999 sub-accounts",
+    description: `Up to ${PLAN_LIMITS.pro} sub-accounts`,
     features: [
       "Weekly analysis for each sub-account",
       "Email digest and exports",
@@ -85,6 +83,12 @@ export function PricingTable() {
         typeof (body as { url: unknown }).url === "string"
       ) {
         const url = (body as { url: string }).url;
+        if (!isStripeHostedCheckoutUrl(url)) {
+          setError("Invalid checkout URL");
+          setLoadingPlan(null);
+          return;
+        }
+        setLoadingPlan(null);
         const anchor = document.createElement("a");
         anchor.href = url;
         anchor.rel = "noopener noreferrer";
@@ -140,7 +144,7 @@ export function PricingTable() {
                   letterSpacing: "var(--tracking-tight)",
                 }}
               >
-                {tier.price}
+                {planPriceDisplayUsd(tier.plan)}
                 <span
                   className="font-normal text-fs-secondary"
                   style={{ fontSize: "var(--font-size-small)" }}
