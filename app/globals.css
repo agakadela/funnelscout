@@ -517,15 +517,20 @@
     font-size: 12px;
   }
 
-  /* --- Pricing tier card --- */
+  /* --- Pricing tier card (flex so CTA aligns to bottom in grids) --- */
   .fs-pricing-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
     border: 1px solid var(--color-fs-border);
     border-radius: var(--radius-card);
     padding: 28px;
   }
 
+  /* Use with .fs-pricing-card — amber border + extra top space for the tab ribbon */
   .fs-pricing-card-featured {
-    border: 1px solid var(--color-fs-amber);
+    border-color: var(--color-fs-amber);
+    padding-top: 3rem;
   }
 
   /* --- Pricing feature row --- */
@@ -625,10 +630,16 @@
     letter-spacing: 0.06em;
   }
 
-  /* --- Page section divider --- */
+  /* --- Page section divider (marketing + long-form pages) --- */
   .fs-section {
     border-top: 1px solid var(--color-fs-border);
-    padding: 72px 48px;
+    padding: 72px 24px;
+  }
+
+  @media (min-width: 640px) {
+    .fs-section {
+      padding: 72px 48px;
+    }
   }
 
   /* --- Sidebar layout shell --- */

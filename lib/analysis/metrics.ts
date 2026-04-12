@@ -1,6 +1,20 @@
 import { and, eq, gte, lt } from "drizzle-orm";
+import { z } from "zod";
+
 import { opportunityEvents, subAccounts } from "@/drizzle/schema";
 import { db } from "@/lib/db";
+
+export const PipelineMetricsSnapshotSchema = z.object({
+  periodStart: z.string(),
+  periodEnd: z.string(),
+  subAccountId: z.string(),
+  eventCount: z.number(),
+  uniqueOpportunityCount: z.number(),
+  eventsByType: z.record(z.string(), z.number()),
+  eventsByStageId: z.record(z.string(), z.number()),
+  statusCounts: z.record(z.string(), z.number()),
+  sumMonetaryValue: z.number(),
+});
 
 export type OpportunityEventMetricsRow = {
   eventType: string;
