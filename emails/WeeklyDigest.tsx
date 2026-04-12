@@ -47,7 +47,7 @@ export default function WeeklyDigestEmail({
             </Section>
           ))}
 
-          <Section style={{ marginTop: 24 }}>
+          <Section style={footerCtaSection}>
             <Link href={dashboardUrl} style={link}>
               Open account in FunnelScout
             </Link>
@@ -119,4 +119,8 @@ const link = {
   fontSize: "15px",
   fontWeight: "600",
   textDecoration: "underline",
+};
+
+const footerCtaSection = {
+  marginTop: 24,
 };

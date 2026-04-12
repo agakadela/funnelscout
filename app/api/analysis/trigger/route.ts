@@ -1,9 +1,8 @@
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { auth } from "@/lib/auth";
+import { getCachedAuthSession } from "@/lib/auth-session";
 import { prepareAccountAnalysis } from "@/lib/analysis/enqueue";
 import { organizations, subAccounts } from "@/drizzle/schema";
 import { db } from "@/lib/db";
@@ -14,9 +13,7 @@ const TriggerBodySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getCachedAuthSession();
 
   if (!session?.session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

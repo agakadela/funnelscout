@@ -1,9 +1,9 @@
 import { eq } from "drizzle-orm";
-import { headers } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
+
 import { organization as betterAuthOrganization } from "@/drizzle/better-auth-schema";
 import { organizations } from "@/drizzle/schema";
-import { auth } from "@/lib/auth";
+import { getCachedAuthSession } from "@/lib/auth-session";
 import { db } from "@/lib/db";
 import {
   encryptGhlToken,
@@ -19,12 +19,17 @@ function errorRedirect(request: NextRequest, message: string): NextResponse {
   );
 }
 
+function signInRedirect(request: NextRequest, message: string): NextResponse {
+  const params = new URLSearchParams({ ghl_error: message });
+  return NextResponse.redirect(
+    new URL(`/sign-in?${params.toString()}`, request.nextUrl.origin),
+  );
+}
+
 export async function GET(request: NextRequest) {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const session = await getCachedAuthSession();
   if (!session?.session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return signInRedirect(request, "session_required");
   }
 
   const searchParams = request.nextUrl.searchParams;

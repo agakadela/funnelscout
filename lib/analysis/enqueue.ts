@@ -91,7 +91,7 @@ export async function prepareAccountAnalysis(input: {
     eq(analyses.periodStart, periodStart),
   );
 
-  let row = await db.query.analyses.findFirst({
+  const row = await db.query.analyses.findFirst({
     where: periodWhere,
   });
 
