@@ -5,7 +5,7 @@ export function Hero() {
     <section className="px-6 pb-20 pt-16 text-center sm:px-12">
       <div className="mx-auto flex max-w-5xl flex-col items-center">
         <p className="fs-pill-amber mb-5 inline-flex">BUILT FOR GHL AGENCIES</p>
-        <h1 className="fs-hero-title mx-auto max-w-[40rem] text-balance">
+        <h1 className="fs-hero-title mx-auto max-w-160 text-balance">
           Know which clients need attention{" "}
           <span className="fs-hero-highlight">before</span> revenue slips away
         </h1>

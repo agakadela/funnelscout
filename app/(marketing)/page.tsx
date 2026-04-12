@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Hero } from "@/components/marketing/Hero";
@@ -42,6 +43,26 @@ const TESTIMONIALS = [
     meta: "Agency owner · 12 clients",
   },
 ] as const;
+
+export const metadata: Metadata = {
+  title: "Pipeline intelligence for GHL agencies",
+  description:
+    "FunnelScout connects to GoHighLevel once, ingests opportunity activity, and delivers a weekly brief per sub-account with health, anomalies, and revenue-focused recommendations.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "FunnelScout — pipeline intelligence for GHL agencies",
+    description:
+      "Weekly per-client readouts: what moved, what stalled, and what to do next—without spreadsheets or manual exports.",
+    url: "/",
+  },
+  twitter: {
+    title: "FunnelScout — pipeline intelligence for GHL agencies",
+    description:
+      "Weekly per-client readouts: what moved, what stalled, and what to do next—without spreadsheets or manual exports.",
+  },
+};
 
 export default function MarketingHomePage() {
   return (

@@ -1,13 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { verifyGHLSignature } from "@/lib/ghl/oauth";
-import { GHLWebhookEventSchema } from "@/lib/ghl/types";
 import { inngest } from "@/inngest/client";
+import { env } from "@/lib/env";
+import { verifyGHLSignature } from "@/lib/ghl/oauth";
+import { tryConsumeGhlWebhookRateSlot } from "@/lib/ghl/webhook-rate-limit";
+import { GHLWebhookEventSchema } from "@/lib/ghl/types";
+import { getRequestClientIp } from "@/lib/request-client-ip";
 
 function getSignatureHeader(request: NextRequest): string {
   return request.headers.get("x-ghl-signature") ?? "";
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const limit = env.ghl.webhookRateLimitPerIpPerMinute;
+  if (limit > 0) {
+    const ip = getRequestClientIp(request);
+    if (!tryConsumeGhlWebhookRateSlot(ip, limit)) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+    }
+  }
+
   const signature = getSignatureHeader(request);
   const body = await request.text();
 
