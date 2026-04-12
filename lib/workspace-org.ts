@@ -4,9 +4,13 @@ import { organization as betterAuthOrganization } from "@/drizzle/better-auth-sc
 import { organizations } from "@/drizzle/schema";
 import { db } from "@/lib/db";
 
+export type EnsureAppOrganizationResult =
+  | { ok: true; id: string }
+  | { ok: false; error: "workspace_unavailable" };
+
 export async function ensureAppOrganizationForBetterAuthOrg(input: {
   betterAuthOrganizationId: string;
-}): Promise<{ id: string }> {
+}): Promise<EnsureAppOrganizationResult> {
   const existing = await db.query.organizations.findFirst({
     where: eq(
       organizations.betterAuthOrganizationId,
@@ -14,7 +18,7 @@ export async function ensureAppOrganizationForBetterAuthOrg(input: {
     ),
   });
   if (existing) {
-    return { id: existing.id };
+    return { ok: true, id: existing.id };
   }
 
   const [baOrg] = await db
@@ -37,7 +41,7 @@ export async function ensureAppOrganizationForBetterAuthOrg(input: {
     .returning({ id: organizations.id });
 
   if (row) {
-    return { id: row.id };
+    return { ok: true, id: row.id };
   }
 
   const afterConflict = await db.query.organizations.findFirst({
@@ -47,8 +51,8 @@ export async function ensureAppOrganizationForBetterAuthOrg(input: {
     ),
   });
   if (!afterConflict) {
-    throw new Error("Failed to create workspace organization");
+    return { ok: false, error: "workspace_unavailable" };
   }
 
-  return { id: afterConflict.id };
+  return { ok: true, id: afterConflict.id };
 }

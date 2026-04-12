@@ -19,10 +19,17 @@ function errorRedirect(request: NextRequest, message: string): NextResponse {
   );
 }
 
+function signInRedirect(request: NextRequest, message: string): NextResponse {
+  const params = new URLSearchParams({ ghl_error: message });
+  return NextResponse.redirect(
+    new URL(`/sign-in?${params.toString()}`, request.nextUrl.origin),
+  );
+}
+
 export async function GET(request: NextRequest) {
   const session = await getCachedAuthSession();
   if (!session?.session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return signInRedirect(request, "session_required");
   }
 
   const searchParams = request.nextUrl.searchParams;

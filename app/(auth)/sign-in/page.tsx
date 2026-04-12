@@ -1,17 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
 
-export default function SignInPage() {
+const GHL_ERROR_MESSAGES: Record<string, string> = {
+  session_required:
+    "Your session expired before GoHighLevel could finish connecting. Sign in, then connect GHL again from the dashboard.",
+};
+
+function SignInForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  const ghlErrorKey = searchParams.get("ghl_error");
+  const ghlNotice =
+    ghlErrorKey != null && ghlErrorKey !== ""
+      ? (GHL_ERROR_MESSAGES[ghlErrorKey] ?? null)
+      : null;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,6 +58,15 @@ export default function SignInPage() {
           Pipeline intelligence for your GHL clients
         </p>
       </div>
+
+      {ghlNotice ? (
+        <p
+          className="fs-text-caption mb-6 rounded-md border border-fs-border bg-fs-surface-2 px-3 py-2 text-fs-secondary"
+          role="status"
+        >
+          {ghlNotice}
+        </p>
+      ) : null}
 
       <form onSubmit={onSubmit} className="flex flex-col gap-5">
         <div>
@@ -112,5 +133,27 @@ export default function SignInPage() {
         </Link>
       </p>
     </div>
+  );
+}
+
+function SignInFallback() {
+  return (
+    <div className="w-full max-w-[360px]">
+      <div className="mb-8 text-center">
+        <p className="fs-text-subheading mb-3 font-semibold text-fs-primary">
+          FunnelScout
+        </p>
+        <h1 className="fs-auth-screen-title text-fs-primary">Sign in</h1>
+      </div>
+      <p className="fs-text-caption text-fs-secondary">Loading…</p>
+    </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<SignInFallback />}>
+      <SignInForm />
+    </Suspense>
   );
 }

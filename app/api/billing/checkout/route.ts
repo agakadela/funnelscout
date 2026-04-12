@@ -40,9 +40,16 @@ export async function POST(req: Request) {
   }
 
   const plan = parsed.data.plan;
-  const { id: organizationId } = await ensureAppOrganizationForBetterAuthOrg({
+  const ensured = await ensureAppOrganizationForBetterAuthOrg({
     betterAuthOrganizationId,
   });
+  if (!ensured.ok) {
+    return NextResponse.json(
+      { error: "Could not prepare workspace for checkout" },
+      { status: 503 },
+    );
+  }
+  const organizationId = ensured.id;
 
   const origin = new URL(env.auth.url).origin;
 

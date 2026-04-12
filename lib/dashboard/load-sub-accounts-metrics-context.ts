@@ -1,6 +1,6 @@
 import { cache } from "react";
 
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, max } from "drizzle-orm";
 
 import {
   isPipelineMetricsSnapshot,
@@ -27,24 +27,47 @@ export const loadSubAccountsMetricsContext = cache(
     });
 
     const subIds = subs.map((s) => s.id);
-    const analysisRows =
-      subIds.length === 0
-        ? []
-        : await db.query.analyses.findMany({
-            where: and(
-              eq(analyses.organizationId, organizationId),
-              eq(analyses.status, "completed"),
-              inArray(analyses.subAccountId, subIds),
-            ),
-            orderBy: [desc(analyses.createdAt)],
-          });
+    let analysisRows: (typeof analyses.$inferSelect)[] = [];
+    if (subIds.length > 0) {
+      const latestPerSub = db
+        .select({
+          subAccountId: analyses.subAccountId,
+          lastCreated: max(analyses.createdAt).as("lastCreated"),
+        })
+        .from(analyses)
+        .where(
+          and(
+            eq(analyses.organizationId, organizationId),
+            eq(analyses.status, "completed"),
+            inArray(analyses.subAccountId, subIds),
+          ),
+        )
+        .groupBy(analyses.subAccountId)
+        .as("latest_per_sub");
 
-    const latestBySub = new Map<string, (typeof analysisRows)[number]>();
-    for (const row of analysisRows) {
-      if (!latestBySub.has(row.subAccountId)) {
-        latestBySub.set(row.subAccountId, row);
-      }
+      const joined = await db
+        .select({ analysis: analyses })
+        .from(analyses)
+        .innerJoin(
+          latestPerSub,
+          and(
+            eq(analyses.subAccountId, latestPerSub.subAccountId),
+            eq(analyses.createdAt, latestPerSub.lastCreated),
+          ),
+        )
+        .where(
+          and(
+            eq(analyses.organizationId, organizationId),
+            eq(analyses.status, "completed"),
+          ),
+        );
+
+      analysisRows = joined.map((j) => j.analysis);
     }
+
+    const latestBySub = new Map(
+      analysisRows.map((row) => [row.subAccountId, row] as const),
+    );
 
     return subs.map((sub) => {
       const latest = latestBySub.get(sub.id);
