@@ -136,9 +136,7 @@ export function AppSidebar({
             No clients yet. Connect GHL to import your accounts.
           </p>
         ) : clients.length === 0 ? (
-          <p className="fs-text-caption px-3 text-fs-faded">
-            No clients yet
-          </p>
+          <p className="fs-text-caption px-3 text-fs-faded">No clients yet</p>
         ) : (
           clients.map((c) => {
             const href = `/accounts/${c.ghlLocationId}`;
