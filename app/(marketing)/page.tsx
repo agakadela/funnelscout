@@ -96,9 +96,7 @@ export default function MarketingHomePage() {
                 <div className="fs-stars" aria-hidden>
                   ★★★★★
                 </div>
-                <p className="fs-text-small-relaxed text-fs-muted">
-                  {t.quote}
-                </p>
+                <p className="fs-text-small-relaxed text-fs-muted">{t.quote}</p>
                 <div className="mt-auto flex items-center gap-3">
                   <div className="fs-text-caption flex h-10 w-10 items-center justify-center rounded-full border border-fs-border bg-fs-surface-2 font-mono text-fs-primary">
                     {t.author
@@ -108,9 +106,7 @@ export default function MarketingHomePage() {
                   </div>
                   <div>
                     <p className="fs-text-small text-fs-primary">{t.author}</p>
-                    <p className="fs-text-caption text-fs-faded">
-                      {t.meta}
-                    </p>
+                    <p className="fs-text-caption text-fs-faded">{t.meta}</p>
                   </div>
                 </div>
               </div>

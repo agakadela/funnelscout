@@ -106,10 +106,7 @@ export function PricingTable() {
   return (
     <div>
       {error ? (
-        <p
-          className="fs-text-small mb-6 text-center text-fs-red"
-          role="alert"
-        >
+        <p className="fs-text-small mb-6 text-center text-fs-red" role="alert">
           {error}
         </p>
       ) : null}

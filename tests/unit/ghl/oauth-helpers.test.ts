@@ -1,10 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { createHmac } from "node:crypto";
 import {
   GHL_OAUTH_AUTHORIZE_URL,
   buildGhlAuthorizeUrl,
   createSignedOAuthState,
   parseSignedOAuthState,
+  verifyGHLSignature,
 } from "@/lib/ghl/oauth";
+import { env } from "@/lib/env";
 
 describe("GHL OAuth helpers", () => {
   afterEach(() => {
@@ -49,5 +52,37 @@ describe("GHL OAuth helpers", () => {
     const state = createSignedOAuthState("org-1");
     vi.setSystemTime(new Date("2026-04-01T12:20:00.000Z"));
     expect(parseSignedOAuthState(state)).toBeNull();
+  });
+
+  it("parseSignedOAuthState returns null when the payload is not two segments", () => {
+    expect(parseSignedOAuthState("only-one")).toBeNull();
+    expect(parseSignedOAuthState("a.b.c")).toBeNull();
+  });
+
+  it("parseSignedOAuthState returns null when the inner JSON is not a valid object", () => {
+    const payloadB64 = Buffer.from("null", "utf8").toString("base64url");
+    const sig = createHmac("sha256", env.auth.secret)
+      .update(payloadB64)
+      .digest("base64url");
+    expect(parseSignedOAuthState(`${payloadB64}.${sig}`)).toBeNull();
+  });
+
+  it("parseSignedOAuthState returns null when required fields have wrong types", () => {
+    const payloadB64 = Buffer.from(
+      JSON.stringify({ o: 1, t: Date.now() }),
+      "utf8",
+    ).toString("base64url");
+    const sig = createHmac("sha256", env.auth.secret)
+      .update(payloadB64)
+      .digest("base64url");
+    expect(parseSignedOAuthState(`${payloadB64}.${sig}`)).toBeNull();
+  });
+
+  it("verifyGHLSignature accepts sha256= prefix form using the configured webhook secret", () => {
+    const body = '{"type":"OpportunityCreate"}';
+    const hex = createHmac("sha256", env.ghl.webhookSecret)
+      .update(body, "utf8")
+      .digest("hex");
+    expect(verifyGHLSignature(body, `sha256=${hex}`)).toBe(true);
   });
 });

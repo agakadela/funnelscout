@@ -23,9 +23,7 @@ export function HealthScoreBadge({
     <div className={`fs-health-badge ${badgeClass[tier]}`}>
       <span className={`fs-dot ${dotClass[tier]}`} />
       <span className="font-mono font-semibold">{score}</span>
-      <span className="fs-text-micro text-fs-secondary">
-        health
-      </span>
+      <span className="fs-text-micro text-fs-secondary">health</span>
     </div>
   );
 }
