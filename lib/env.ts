@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { nextPublicSentryDsnSchema } from "./env/next-public-sentry-dsn";
+
 const envSchema = z.object({
   NODE_ENV: z.preprocess(
     (val: unknown) => {
@@ -22,6 +24,11 @@ const envSchema = z.object({
   BETTER_AUTH_SECRET: z.string().min(1),
   BETTER_AUTH_URL: z.string().url(),
   DATABASE_URL: z.string().min(1),
+  NEXT_RUNTIME: z.enum(["nodejs", "edge"]).optional(),
+  NEXT_PUBLIC_SENTRY_DSN: nextPublicSentryDsnSchema,
+  SENTRY_ORG: z.string().min(1).optional(),
+  SENTRY_PROJECT: z.string().min(1).optional(),
+  SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
   GHL_TOKEN_ENCRYPTION_KEY: z
     .string()
     .length(64)
@@ -52,6 +59,7 @@ const _env = parsed.data;
 
 export const env = {
   nodeEnv: _env.NODE_ENV,
+  nextRuntime: _env.NEXT_RUNTIME,
   ghl: {
     clientId: _env.GHL_CLIENT_ID,
     clientSecret: _env.GHL_CLIENT_SECRET,
@@ -81,5 +89,11 @@ export const env = {
   },
   database: {
     url: _env.DATABASE_URL,
+  },
+  sentry: {
+    dsn: _env.NEXT_PUBLIC_SENTRY_DSN,
+    org: _env.SENTRY_ORG,
+    project: _env.SENTRY_PROJECT,
+    authToken: _env.SENTRY_AUTH_TOKEN,
   },
 } as const;
