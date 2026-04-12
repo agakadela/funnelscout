@@ -36,6 +36,14 @@ const envSchema = z.object({
       message:
         "GHL_TOKEN_ENCRYPTION_KEY must not be all zeros — use: openssl rand -hex 32",
     }),
+  GHL_WEBHOOK_RATE_LIMIT_PER_IP_PER_MINUTE: z
+    .string()
+    .optional()
+    .transform((raw) => {
+      if (raw === undefined || raw.trim() === "") return 0;
+      const n = Number.parseInt(raw, 10);
+      return Number.isFinite(n) && n >= 0 ? n : 0;
+    }),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -58,6 +66,8 @@ export const env = {
     webhookSecret: _env.GHL_WEBHOOK_SECRET,
     redirectUri: _env.GHL_REDIRECT_URI,
     tokenEncryptKey: _env.GHL_TOKEN_ENCRYPTION_KEY,
+    webhookRateLimitPerIpPerMinute:
+      _env.GHL_WEBHOOK_RATE_LIMIT_PER_IP_PER_MINUTE,
   },
   stripe: {
     secretKey: _env.STRIPE_SECRET_KEY,

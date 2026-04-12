@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
 import "./globals.css";
+import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(env.auth.url),
   title: "FunnelScout",
   description: "AI-powered sales pipeline intelligence for GHL agencies",
 };

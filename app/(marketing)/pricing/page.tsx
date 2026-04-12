@@ -1,6 +1,27 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PricingTable } from "@/components/marketing/PricingTable";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Starter, Agency, and Pro plans for small GoHighLevel shops. Sub-account limits align with how many clients you connect for weekly analysis.",
+  alternates: {
+    canonical: "/pricing",
+  },
+  openGraph: {
+    title: "FunnelScout pricing",
+    description:
+      "Simple tiers with Stripe Checkout. Upgrade as you add more GHL sub-accounts.",
+    url: "/pricing",
+  },
+  twitter: {
+    title: "FunnelScout pricing",
+    description:
+      "Simple tiers with Stripe Checkout. Upgrade as you add more GHL sub-accounts.",
+  },
+};
 
 export default function PricingPage() {
   return (

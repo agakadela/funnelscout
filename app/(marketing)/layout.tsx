@@ -1,5 +1,29 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
+
+import { SiteFooter } from "@/components/marketing/SiteFooter";
+import { env } from "@/lib/env";
+
+export const metadata: Metadata = {
+  metadataBase: new URL(env.auth.url),
+  title: {
+    default:
+      "FunnelScout — weekly pipeline intelligence for GoHighLevel agencies",
+    template: "%s · FunnelScout",
+  },
+  description:
+    "Connect GHL once. Each week see per-client health, stalled deals, and prioritized revenue moves—built for lean agencies.",
+  applicationName: "FunnelScout",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "FunnelScout",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
+};
 
 export default function MarketingLayout({
   children,
@@ -39,21 +63,7 @@ export default function MarketingLayout({
         </div>
       </header>
       <div className="flex-1">{children}</div>
-      <footer className="border-t border-fs-border px-6 py-10 sm:px-12">
-        <div className="mx-auto flex max-w-5xl flex-col gap-2 text-fs-faded sm:flex-row sm:items-center sm:justify-between">
-          <p className="fs-text-caption">
-            © {new Date().getFullYear()} FunnelScout
-          </p>
-          <div className="fs-text-caption flex gap-4">
-            <Link href="/pricing" className="text-fs-faded hover:text-fs-amber">
-              Pricing
-            </Link>
-            <Link href="/sign-in" className="text-fs-faded hover:text-fs-amber">
-              Sign in
-            </Link>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

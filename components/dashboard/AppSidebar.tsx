@@ -161,17 +161,27 @@ export function AppSidebar({
         )}
       </div>
 
-      <div className="mt-auto flex gap-3 border-t border-fs-border px-5 pt-4">
-        <div className="fs-text-label flex size-9 shrink-0 items-center justify-center rounded-full border border-fs-border bg-fs-surface-2 font-mono font-semibold text-fs-primary">
-          {userInitials}
+      <div className="mt-auto border-t border-fs-border px-5 pt-4">
+        <div className="flex gap-3">
+          <div className="fs-text-label flex size-9 shrink-0 items-center justify-center rounded-full border border-fs-border bg-fs-surface-2 font-mono font-semibold text-fs-primary">
+            {userInitials}
+          </div>
+          <div className="min-w-0">
+            <p className="fs-text-label truncate font-medium text-fs-primary">
+              {agencyName}
+            </p>
+            <p className="fs-text-micro m-0 font-mono text-fs-faded">
+              Workspace · {clientCount} clients
+            </p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <p className="fs-text-label truncate font-medium text-fs-primary">
-            {agencyName}
-          </p>
-          <p className="fs-text-micro m-0 font-mono text-fs-faded">
-            Workspace · {clientCount} clients
-          </p>
+        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 fs-text-micro">
+          <Link href="/privacy" className="text-fs-faded hover:text-fs-amber">
+            Privacy
+          </Link>
+          <Link href="/terms" className="text-fs-faded hover:text-fs-amber">
+            Terms
+          </Link>
         </div>
       </div>
     </aside>
