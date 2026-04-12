@@ -11,19 +11,19 @@ function getSignatureHeader(request: NextRequest): string {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const signature = getSignatureHeader(request);
+  const body = await request.text();
+
+  if (!verifyGHLSignature(body, signature)) {
+    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+  }
+
   const limit = env.ghl.webhookRateLimitPerIpPerMinute;
   if (limit > 0) {
     const ip = getRequestClientIp(request);
     if (!tryConsumeGhlWebhookRateSlot(ip, limit)) {
       return NextResponse.json({ error: "Too many requests" }, { status: 429 });
     }
-  }
-
-  const signature = getSignatureHeader(request);
-  const body = await request.text();
-
-  if (!verifyGHLSignature(body, signature)) {
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
   }
 
   let json: unknown;
