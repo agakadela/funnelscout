@@ -169,7 +169,15 @@ export const analyzeAccount = inngest.createFunction(
         metricsSnapshot,
       });
     } catch (err) {
-      Sentry.captureException(err);
+      Sentry.withScope((scope) => {
+        scope.setTag("inngest.function", "analyze-account");
+        scope.setContext("tenant", {
+          organizationId: data.organizationId,
+          analysisId: data.analysisId,
+          subAccountId: data.subAccountId,
+        });
+        Sentry.captureException(err);
+      });
       throw err;
     }
 
@@ -226,7 +234,16 @@ export const analyzeAccount = inngest.createFunction(
           })),
         });
       } catch (emailErr) {
-        Sentry.captureException(emailErr);
+        Sentry.withScope((scope) => {
+          scope.setTag("inngest.function", "analyze-account");
+          scope.setTag("inngest.step", "weekly-digest-email");
+          scope.setContext("tenant", {
+            organizationId: data.organizationId,
+            analysisId: data.analysisId,
+            subAccountId: data.subAccountId,
+          });
+          Sentry.captureException(emailErr);
+        });
         return {
           sent: false as const,
           reason: "send_failed" as const,
