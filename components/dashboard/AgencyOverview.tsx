@@ -3,12 +3,6 @@ import Link from "next/link";
 import type { AgencyOverviewData } from "@/lib/dashboard/load-agency-overview";
 import { formatUsdCompact } from "@/lib/dashboard/format";
 
-function barFillClass(tier: "green" | "yellow" | "red"): string {
-  if (tier === "green") return "bg-fs-green";
-  if (tier === "yellow") return "bg-fs-yellow";
-  return "bg-fs-red";
-}
-
 function healthScoreTextClass(tier: "green" | "yellow" | "red"): string {
   if (tier === "green") return "text-fs-green";
   if (tier === "yellow") return "text-fs-yellow";
@@ -22,17 +16,9 @@ export function AgencyOverview({ data }: { data: AgencyOverviewData }) {
 
   if (data.kind === "no_clients") {
     return (
-      <div className="fs-card" style={{ padding: "32px" }}>
-        <p
-          className="fs-tag mb-3"
-          style={{ color: "var(--color-fs-secondary)" }}
-        >
-          CLIENTS
-        </p>
-        <p
-          className="text-fs-secondary"
-          style={{ fontSize: "var(--font-size-body)" }}
-        >
+      <div className="fs-card p-8">
+        <p className="fs-tag mb-3 text-fs-secondary">CLIENTS</p>
+        <p className="fs-text-body text-fs-secondary">
           No clients found. Your sub-accounts will appear here after the first
           sync.
         </p>
@@ -48,18 +34,10 @@ export function AgencyOverview({ data }: { data: AgencyOverviewData }) {
 
   return (
     <div className="fs-card overflow-hidden">
-      <div
-        className="border-b border-fs-border px-6 py-4"
-        style={{ backgroundColor: "var(--color-fs-surface-2)" }}
-      >
-        <p className="fs-tag" style={{ color: "var(--color-fs-secondary)" }}>
-          CLIENTS
-        </p>
+      <div className="border-b border-fs-border bg-fs-surface-2 px-6 py-4">
+        <p className="fs-tag text-fs-secondary">CLIENTS</p>
       </div>
-      <div
-        className="grid items-center gap-3 border-b border-fs-border px-6 py-3"
-        style={{ gridTemplateColumns: "2.5fr 1fr 1fr 1fr 110px" }}
-      >
+      <div className="grid grid-cols-[2.5fr_1fr_1fr_1fr_110px] items-center gap-3 border-b border-fs-border px-6 py-3">
         <span className="fs-col-header">Client</span>
         <span className="fs-col-header">Pipeline</span>
         <span className="fs-col-header">Deals</span>
@@ -78,25 +56,18 @@ export function AgencyOverview({ data }: { data: AgencyOverviewData }) {
             <Link
               key={row.id}
               href={`/accounts/${row.ghlLocationId}`}
-              className="grid cursor-pointer items-center gap-3 border-b border-fs-border px-6 py-4 no-underline last:border-b-0 hover:bg-fs-surface-2/40"
-              style={{ gridTemplateColumns: "2.5fr 1fr 1fr 1fr 110px" }}
+              className="grid grid-cols-[2.5fr_1fr_1fr_1fr_110px] cursor-pointer items-center gap-3 border-b border-fs-border px-6 py-4 no-underline last:border-b-0 hover:bg-fs-surface-2/40"
             >
               <div className="min-w-0">
                 <p className="truncate font-medium text-fs-primary">
                   {row.name}
                 </p>
                 {showStalledMeta ? (
-                  <p
-                    className="text-fs-red"
-                    style={{ fontSize: "var(--font-size-caption)" }}
-                  >
+                  <p className="fs-text-caption text-fs-red">
                     {row.stalledDeals} stalled deals
                   </p>
                 ) : pipelineMeta ? (
-                  <p
-                    className="text-fs-faded"
-                    style={{ fontSize: "var(--font-size-caption)" }}
-                  >
+                  <p className="fs-text-caption text-fs-faded">
                     {pipelineMeta}
                   </p>
                 ) : null}
@@ -109,20 +80,33 @@ export function AgencyOverview({ data }: { data: AgencyOverviewData }) {
                 {row.conversionLabel}
               </p>
               <div className="flex items-center gap-2">
-                <div className="fs-bar-track min-w-0 flex-1">
-                  <div
-                    className={`h-full rounded-sm ${barFillClass(row.healthTier)}`}
-                    style={{
-                      width: `${Math.min(100, Math.max(4, row.healthScore))}%`,
-                    }}
-                  />
+                <div className="fs-bar-track min-w-0 flex-1 overflow-hidden rounded-sm">
+                  <svg
+                    aria-hidden
+                    className="block max-w-full"
+                    height="3"
+                    preserveAspectRatio="none"
+                    viewBox="0 0 100 3"
+                    width={`${Math.min(100, Math.max(4, row.healthScore))}%`}
+                  >
+                    <rect
+                      fill={
+                        row.healthTier === "green"
+                          ? "var(--color-fs-green)"
+                          : row.healthTier === "yellow"
+                            ? "var(--color-fs-yellow)"
+                            : "var(--color-fs-red)"
+                      }
+                      height="3"
+                      rx="1"
+                      width="100"
+                      x="0"
+                      y="0"
+                    />
+                  </svg>
                 </div>
                 <span
-                  className={`shrink-0 font-mono ${healthScoreTextClass(row.healthTier)}`}
-                  style={{
-                    fontSize: "var(--font-size-caption)",
-                    fontWeight: 600,
-                  }}
+                  className={`fs-text-caption shrink-0 font-mono font-semibold ${healthScoreTextClass(row.healthTier)}`}
                 >
                   {row.healthScore}
                 </span>

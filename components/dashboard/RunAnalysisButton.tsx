@@ -160,10 +160,7 @@ export function RunAnalysisButton({
         )}
       </button>
       {message && state === "error" ? (
-        <p
-          className="max-w-xs text-right text-fs-red"
-          style={{ fontSize: "var(--font-size-caption)" }}
-        >
+        <p className="fs-text-caption max-w-xs text-right text-fs-red">
           {message}
         </p>
       ) : null}

@@ -13,10 +13,7 @@ export default function PricingPage() {
           </h2>
         </header>
         <PricingTable />
-        <p
-          className="mt-10 text-center text-fs-faded"
-          style={{ fontSize: "var(--font-size-caption)" }}
-        >
+        <p className="fs-text-caption mt-10 text-center text-fs-faded">
           <Link href="/" className="text-fs-amber hover:text-fs-amber-hover">
             ← Back to home
           </Link>

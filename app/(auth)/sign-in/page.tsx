@@ -38,29 +38,11 @@ export default function SignInPage() {
   return (
     <div className="w-full max-w-[360px]">
       <div className="mb-8 text-center">
-        <p
-          className="mb-3 text-fs-primary"
-          style={{
-            fontSize: "var(--font-size-subheading)",
-            fontWeight: 600,
-          }}
-        >
+        <p className="fs-text-subheading mb-3 font-semibold text-fs-primary">
           FunnelScout
         </p>
-        <h1
-          className="text-fs-primary"
-          style={{
-            fontSize: "var(--font-size-heading)",
-            fontWeight: 700,
-            letterSpacing: "var(--tracking-tight)",
-          }}
-        >
-          Sign in
-        </h1>
-        <p
-          className="mt-2 text-fs-secondary"
-          style={{ fontSize: "var(--font-size-small)" }}
-        >
+        <h1 className="fs-auth-screen-title text-fs-primary">Sign in</h1>
+        <p className="fs-text-small mt-2 text-fs-secondary">
           Pipeline intelligence for your GHL clients
         </p>
       </div>
@@ -97,11 +79,7 @@ export default function SignInPage() {
           />
         </div>
         {error ? (
-          <p
-            className="text-fs-red"
-            style={{ fontSize: "var(--font-size-caption)" }}
-            role="alert"
-          >
+          <p className="fs-text-caption text-fs-red" role="alert">
             {error}
           </p>
         ) : null}
@@ -114,17 +92,9 @@ export default function SignInPage() {
         </button>
       </form>
 
-      <div
-        className="my-8 flex items-center gap-3"
-        style={{ color: "var(--color-fs-faded)" }}
-      >
+      <div className="my-8 flex items-center gap-3 text-fs-faded">
         <div className="h-px flex-1 bg-fs-border" />
-        <span
-          className="font-mono"
-          style={{ fontSize: "var(--font-size-label)" }}
-        >
-          or
-        </span>
+        <span className="fs-text-label font-mono">or</span>
         <div className="h-px flex-1 bg-fs-border" />
       </div>
 
@@ -132,10 +102,7 @@ export default function SignInPage() {
         Continue with Google
       </button>
 
-      <p
-        className="mt-8 text-center text-fs-faded"
-        style={{ fontSize: "var(--font-size-caption)" }}
-      >
+      <p className="fs-text-caption mt-8 text-center text-fs-faded">
         Need an account?{" "}
         <Link
           href="/sign-up"

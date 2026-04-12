@@ -4,20 +4,12 @@ export default function SettingsPage() {
       <header className="fs-page-header">
         <div>
           <p className="fs-breadcrumb">Overview /</p>
-          <h1
-            className="text-fs-primary"
-            style={{ fontSize: "var(--font-size-heading)", fontWeight: 700 }}
-          >
-            Settings
-          </h1>
+          <h1 className="fs-page-title text-fs-primary">Settings</h1>
           <p className="fs-breadcrumb">Workspace preferences</p>
         </div>
       </header>
       <div className="fs-card mt-6 p-8">
-        <p
-          className="text-fs-secondary"
-          style={{ fontSize: "var(--font-size-body)" }}
-        >
+        <p className="fs-text-body text-fs-secondary">
           Organization settings will live here (notifications, digest schedule,
           team members).
         </p>

@@ -107,8 +107,7 @@ export function PricingTable() {
     <div>
       {error ? (
         <p
-          className="mb-6 text-center text-fs-red"
-          style={{ fontSize: "var(--font-size-small)" }}
+          className="fs-text-small mb-6 text-center text-fs-red"
           role="alert"
         >
           {error}
@@ -122,11 +121,8 @@ export function PricingTable() {
           return (
             <div key={tier.plan} className={cardClass}>
               {tier.featured ? (
-                <div
-                  className="absolute z-10 rounded-b-md bg-fs-amber px-2.5 py-0.5"
-                  style={{ top: "-1px", left: "24px" }}
-                >
-                  <span className="font-mono text-[10px] font-bold text-fs-bg">
+                <div className="absolute -top-px left-6 z-10 rounded-b-md bg-fs-amber px-2.5 py-0.5">
+                  <span className="fs-text-micro font-mono font-bold text-fs-bg">
                     MOST POPULAR
                   </span>
                 </div>
@@ -136,29 +132,13 @@ export function PricingTable() {
               >
                 {tier.name}
               </p>
-              <div
-                className="mb-1 inline-flex items-baseline gap-1.5 font-mono text-fs-primary"
-                style={{
-                  fontSize: "2rem",
-                  fontWeight: 700,
-                  letterSpacing: "var(--tracking-tight)",
-                }}
-              >
+              <div className="fs-pricing-amount mb-1 inline-flex items-baseline gap-1.5 font-mono text-fs-primary">
                 {planPriceDisplayUsd(tier.plan)}
-                <span
-                  className="font-normal text-fs-secondary"
-                  style={{ fontSize: "var(--font-size-small)" }}
-                >
+                <span className="fs-text-small font-normal text-fs-secondary">
                   /mo
                 </span>
               </div>
-              <p
-                className="mb-6 text-fs-secondary"
-                style={{
-                  fontSize: "var(--font-size-small)",
-                  lineHeight: 1.45,
-                }}
-              >
+              <p className="fs-text-small-compact mb-6 text-fs-secondary">
                 {tier.description}
               </p>
               <ul className="mb-8 flex flex-1 flex-col gap-3">
@@ -180,7 +160,7 @@ export function PricingTable() {
                 className={
                   tier.featured
                     ? "fs-btn-primary mt-auto block w-full py-2.5 font-semibold"
-                    : "mt-auto block w-full cursor-pointer rounded-md border border-fs-border bg-transparent py-2.5 text-center text-sm font-medium text-fs-secondary transition-colors hover:border-[#2d3f55] hover:text-fs-muted disabled:cursor-not-allowed disabled:opacity-40"
+                    : "fs-text-small mt-auto block w-full cursor-pointer rounded-md border border-fs-border bg-transparent py-2.5 text-center font-medium text-fs-secondary transition-colors hover:border-[#2d3f55] hover:text-fs-muted disabled:cursor-not-allowed disabled:opacity-40"
                 }
                 disabled={loadingPlan !== null}
                 onClick={() => void checkout(tier.plan)}

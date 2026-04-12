@@ -49,17 +49,11 @@ export function LandingReportPreview() {
       <div className="flex flex-col gap-2 border-b border-fs-border px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
         <div className="flex min-w-0 items-center gap-2">
           <ReportClockIcon />
-          <span
-            className="truncate font-medium text-fs-primary"
-            style={{ fontSize: "var(--font-size-small)" }}
-          >
+          <span className="fs-text-small truncate font-medium text-fs-primary">
             Pacific Law Firm — Weekly Analysis
           </span>
         </div>
-        <span
-          className="shrink-0 font-mono text-fs-faded"
-          style={{ fontSize: "var(--font-size-label)" }}
-        >
+        <span className="fs-text-label shrink-0 font-mono text-fs-faded">
           Mon Apr 7, 2026 · 09:04 AM
         </span>
       </div>
@@ -71,10 +65,7 @@ export function LandingReportPreview() {
         />
         <div>
           <p className="fs-tag mb-2 text-fs-secondary">METRICS SUMMARY</p>
-          <p
-            className="text-fs-muted"
-            style={{ fontSize: "13px", lineHeight: 1.65 }}
-          >
+          <p className="fs-text-small-prose text-fs-muted">
             About $68k open pipeline across 14 deals. Time in &quot;Proposal
             Sent&quot; is creeping up—worth a closer look. Conversion softened
             versus last week, so the story of the week is momentum, not just
@@ -90,10 +81,7 @@ export function LandingReportPreview() {
         />
         <div>
           <p className="fs-tag mb-2 text-fs-red">ANOMALIES</p>
-          <p
-            className="text-fs-muted"
-            style={{ fontSize: "13px", lineHeight: 1.65 }}
-          >
+          <p className="fs-text-small-prose text-fs-muted">
             Four proposals have been sitting too long—with meaningful dollars
             attached. Conversion dipped more than usual week over week, so this
             is the kind of pattern you will want on your Monday call list.
@@ -114,24 +102,15 @@ export function LandingReportPreview() {
                 key={`landing-report-rec-${index}`}
                 className="flex items-start justify-between gap-4 rounded-md border border-fs-border bg-fs-bg px-3 py-2.5"
               >
-                <p
-                  className="min-w-0 text-fs-muted"
-                  style={{ fontSize: "12px", lineHeight: 1.6 }}
-                >
+                <p className="fs-text-caption-read min-w-0 text-fs-muted">
                   {row.body}
                 </p>
                 <div className="shrink-0 text-right">
-                  <p
-                    className="mb-0.5 font-mono text-fs-faded"
-                    style={{
-                      fontSize: "10px",
-                      letterSpacing: "0.06em",
-                    }}
-                  >
+                  <p className="fs-impact-label mb-0.5 font-mono text-fs-faded">
                     IMPACT
                   </p>
                   <p
-                    className={`font-mono text-[13px] font-semibold whitespace-nowrap ${
+                    className={`fs-text-small font-mono font-semibold whitespace-nowrap ${
                       row.impactClass === "green"
                         ? "text-fs-green"
                         : "text-fs-secondary"

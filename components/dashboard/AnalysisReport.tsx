@@ -28,19 +28,12 @@ export function AnalysisReport({
     return (
       <div className="animate-pulse space-y-4">
         <div className="fs-report-block p-5">
-          <div
-            className="mb-3 h-3 w-32 rounded"
-            style={{ backgroundColor: "var(--color-fs-border)" }}
-          />
+          <div className="mb-3 h-3 w-32 rounded bg-fs-border" />
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-3 rounded"
-                style={{
-                  backgroundColor: "var(--color-fs-surface)",
-                  width: `${90 - (i % 2) * 10}%`,
-                }}
+                className={`h-3 rounded bg-fs-surface ${i % 2 === 0 ? "w-[90%]" : "w-[80%]"}`}
               />
             ))}
           </div>
@@ -51,21 +44,13 @@ export function AnalysisReport({
 
   if (error) {
     return (
-      <div
-        className="fs-card"
-        style={{ padding: "32px", display: "flex", gap: "14px" }}
-      >
+      <div className="fs-card flex gap-3.5 p-8">
         <div className="fs-status-failed flex h-9 w-9 items-center justify-center">
           !
         </div>
         <div>
-          <p style={{ color: "var(--color-fs-red)", fontWeight: 500 }}>
-            Analysis failed to load
-          </p>
-          <p
-            className="text-fs-secondary"
-            style={{ fontSize: "var(--font-size-caption)" }}
-          >
+          <p className="font-medium text-fs-red">Analysis failed to load</p>
+          <p className="fs-text-caption text-fs-secondary">
             There was a problem fetching the latest report. This is usually
             temporary.
           </p>
@@ -90,22 +75,11 @@ export function AnalysisReport({
   return (
     <div className="space-y-4">
       <section className="fs-report-block fs-stripe-neutral p-5">
-        <p
-          className="fs-tag mb-3"
-          style={{ color: "var(--color-fs-secondary)" }}
-        >
-          METRICS SUMMARY
-        </p>
-        <p
-          className="mb-1 font-semibold text-fs-primary"
-          style={{ fontSize: "var(--font-size-subheading)" }}
-        >
+        <p className="fs-tag mb-3 text-fs-secondary">METRICS SUMMARY</p>
+        <p className="fs-text-subheading mb-1 font-semibold text-fs-primary">
           {report.metrics.headline}
         </p>
-        <p
-          className="mb-3 text-fs-faded"
-          style={{ fontSize: "var(--font-size-caption)" }}
-        >
+        <p className="fs-text-caption mb-3 text-fs-faded">
           {report.metrics.periodDescription}
         </p>
         <div className="mb-4 grid gap-3 sm:grid-cols-2">
@@ -118,23 +92,13 @@ export function AnalysisReport({
             </div>
           ))}
         </div>
-        <p
-          className="text-fs-muted"
-          style={{ fontSize: "var(--font-size-small)" }}
-        >
-          {report.metrics.summary}
-        </p>
+        <p className="fs-text-small text-fs-muted">{report.metrics.summary}</p>
       </section>
 
       <section className="fs-report-block fs-stripe-red p-5">
-        <p className="fs-tag mb-3" style={{ color: "var(--color-fs-red)" }}>
-          ANOMALIES
-        </p>
+        <p className="fs-tag mb-3 text-fs-red">ANOMALIES</p>
         {report.anomalies.anomalies.length === 0 ? (
-          <p
-            className="text-fs-secondary"
-            style={{ fontSize: "var(--font-size-small)" }}
-          >
+          <p className="fs-text-small text-fs-secondary">
             No anomalies flagged for this period.
           </p>
         ) : (
@@ -152,9 +116,7 @@ export function AnalysisReport({
       </section>
 
       <section className="fs-report-block fs-stripe-amber p-5">
-        <p className="fs-tag mb-3" style={{ color: "var(--color-fs-amber)" }}>
-          RECOMMENDATIONS
-        </p>
+        <p className="fs-tag mb-3 text-fs-amber">RECOMMENDATIONS</p>
         <div className="space-y-3">
           {report.recommendations.recommendations.map((rec, idx) => {
             const impact = rec.impact.trim();
@@ -165,19 +127,11 @@ export function AnalysisReport({
                   <p className="fs-rec-body">{rec.body}</p>
                 </div>
                 <div className="fs-impact-badge flex flex-col items-end gap-0.5">
-                  <span
-                    className="text-right font-mono text-fs-faded"
-                    style={{
-                      fontSize: "10px",
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
+                  <span className="fs-impact-label text-right font-mono text-fs-faded">
                     Impact
                   </span>
                   <span
-                    className={`text-right font-mono font-semibold ${impactClassName(impact)}`}
-                    style={{ fontSize: "13px", whiteSpace: "nowrap" }}
+                    className={`fs-text-small text-right font-mono font-semibold whitespace-nowrap ${impactClassName(impact)}`}
                   >
                     {impact}
                   </span>

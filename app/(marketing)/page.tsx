@@ -55,25 +55,12 @@ export default function MarketingHomePage() {
             {STEPS.map((step, index) => (
               <div
                 key={step.n}
-                className="flex gap-10"
-                style={{
-                  paddingBottom: "48px",
-                  borderBottom:
-                    index < STEPS.length - 1
-                      ? "1px solid var(--color-fs-border)"
-                      : "none",
-                }}
+                className={`flex gap-10 ${index < STEPS.length - 1 ? "border-b border-fs-border pb-12" : ""}`}
               >
                 <p className="fs-step-number">{step.n}</p>
-                <div className="min-w-0" style={{ paddingTop: "8px" }}>
+                <div className="min-w-0 pt-2">
                   <h3 className="mb-2">{step.title}</h3>
-                  <p
-                    className="text-fs-secondary"
-                    style={{
-                      fontSize: "var(--font-size-body)",
-                      lineHeight: 1.7,
-                    }}
-                  >
+                  <p className="fs-text-body-relaxed text-fs-secondary">
                     {step.body}
                   </p>
                 </div>
@@ -109,37 +96,19 @@ export default function MarketingHomePage() {
                 <div className="fs-stars" aria-hidden>
                   ★★★★★
                 </div>
-                <p
-                  className="text-fs-muted"
-                  style={{ fontSize: "13px", lineHeight: 1.7 }}
-                >
+                <p className="fs-text-small-relaxed text-fs-muted">
                   {t.quote}
                 </p>
                 <div className="mt-auto flex items-center gap-3">
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-full font-mono text-fs-primary"
-                    style={{
-                      backgroundColor: "var(--color-fs-surface-2)",
-                      border: "1px solid var(--color-fs-border)",
-                      fontSize: "12px",
-                    }}
-                  >
+                  <div className="fs-text-caption flex h-10 w-10 items-center justify-center rounded-full border border-fs-border bg-fs-surface-2 font-mono text-fs-primary">
                     {t.author
                       .split(" ")
                       .map((p) => p[0])
                       .join("")}
                   </div>
                   <div>
-                    <p
-                      className="text-fs-primary"
-                      style={{ fontSize: "var(--font-size-small)" }}
-                    >
-                      {t.author}
-                    </p>
-                    <p
-                      className="text-fs-faded"
-                      style={{ fontSize: "var(--font-size-caption)" }}
-                    >
+                    <p className="fs-text-small text-fs-primary">{t.author}</p>
+                    <p className="fs-text-caption text-fs-faded">
                       {t.meta}
                     </p>
                   </div>
@@ -174,10 +143,7 @@ export default function MarketingHomePage() {
           >
             Create your workspace
           </Link>
-          <p
-            className="mx-auto mt-4 max-w-md text-fs-faded"
-            style={{ fontSize: "var(--font-size-caption)", lineHeight: 1.5 }}
-          >
+          <p className="fs-text-caption-tight mx-auto mt-4 max-w-md text-fs-faded">
             Free to connect. No credit card required.
           </p>
         </div>

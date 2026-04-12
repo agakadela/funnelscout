@@ -87,16 +87,7 @@ export function AppSidebar({
           />
           <circle cx="14" cy="24" r="3" fill="var(--color-fs-amber)" />
         </svg>
-        <span
-          className="text-fs-primary"
-          style={{
-            fontSize: "15px",
-            fontWeight: 600,
-            letterSpacing: "-0.01em",
-          }}
-        >
-          FunnelScout
-        </span>
+        <span className="fs-brand-wordmark text-fs-primary">FunnelScout</span>
       </div>
 
       <nav className="flex flex-col gap-0.5 px-3">
@@ -141,17 +132,11 @@ export function AppSidebar({
       <p className="fs-sidebar-section">Clients</p>
       <div className="flex max-h-[min(52vh,520px)] flex-col gap-px overflow-y-auto px-3 pb-4">
         {!ghlConnected ? (
-          <p
-            className="px-3 leading-relaxed text-fs-faded"
-            style={{ fontSize: "var(--font-size-caption)" }}
-          >
+          <p className="fs-text-caption px-3 leading-relaxed text-fs-faded">
             No clients yet. Connect GHL to import your accounts.
           </p>
         ) : clients.length === 0 ? (
-          <p
-            className="px-3 text-fs-faded"
-            style={{ fontSize: "var(--font-size-caption)" }}
-          >
+          <p className="fs-text-caption px-3 text-fs-faded">
             No clients yet
           </p>
         ) : (
@@ -167,8 +152,7 @@ export function AppSidebar({
                 aria-current={active ? "page" : undefined}
               >
                 <span
-                  className={`min-w-0 truncate ${c.healthTier === "red" ? "font-medium text-fs-red" : "text-fs-primary"}`}
-                  style={{ fontSize: "var(--font-size-caption)" }}
+                  className={`fs-text-caption min-w-0 truncate ${c.healthTier === "red" ? "font-medium text-fs-red" : "text-fs-primary"}`}
                 >
                   {c.name}
                 </span>
@@ -180,28 +164,14 @@ export function AppSidebar({
       </div>
 
       <div className="mt-auto flex gap-3 border-t border-fs-border px-5 pt-4">
-        <div
-          className="flex size-9 shrink-0 items-center justify-center rounded-full font-mono text-fs-primary"
-          style={{
-            backgroundColor: "var(--color-fs-surface-2)",
-            border: "1px solid var(--color-fs-border)",
-            fontSize: "11px",
-            fontWeight: 600,
-          }}
-        >
+        <div className="fs-text-label flex size-9 shrink-0 items-center justify-center rounded-full border border-fs-border bg-fs-surface-2 font-mono font-semibold text-fs-primary">
           {userInitials}
         </div>
         <div className="min-w-0">
-          <p
-            className="truncate text-fs-primary"
-            style={{ fontSize: "11px", fontWeight: 500 }}
-          >
+          <p className="fs-text-label truncate font-medium text-fs-primary">
             {agencyName}
           </p>
-          <p
-            className="font-mono text-fs-faded"
-            style={{ fontSize: "10px", margin: 0 }}
-          >
+          <p className="fs-text-micro m-0 font-mono text-fs-faded">
             Workspace · {clientCount} clients
           </p>
         </div>

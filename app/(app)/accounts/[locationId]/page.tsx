@@ -34,13 +34,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
           {drilldown.kind === "ok" ? (
             <>
               <div className="flex flex-wrap items-center gap-3">
-                <h1
-                  className="text-fs-primary"
-                  style={{
-                    fontSize: "var(--font-size-heading)",
-                    fontWeight: 700,
-                  }}
-                >
+                <h1 className="fs-page-title text-fs-primary">
                   {drilldown.name}
                 </h1>
                 <HealthScoreBadge
@@ -57,12 +51,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
               )}
             </>
           ) : (
-            <h1
-              className="text-fs-primary"
-              style={{ fontSize: "var(--font-size-heading)", fontWeight: 700 }}
-            >
-              Account
-            </h1>
+            <h1 className="fs-page-title text-fs-primary">Account</h1>
           )}
         </div>
         {drilldown.kind === "ok" ? (

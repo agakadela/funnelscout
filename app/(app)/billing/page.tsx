@@ -6,22 +6,14 @@ export default function BillingPage() {
       <header className="fs-page-header">
         <div>
           <p className="fs-breadcrumb">Overview /</p>
-          <h1
-            className="text-fs-primary"
-            style={{ fontSize: "var(--font-size-heading)", fontWeight: 700 }}
-          >
-            Billing
-          </h1>
+          <h1 className="fs-page-title text-fs-primary">Billing</h1>
           <p className="fs-breadcrumb">
             Manage your subscription and invoices.
           </p>
         </div>
       </header>
       <div className="fs-card mt-6 p-8">
-        <p
-          className="mb-4 text-fs-secondary"
-          style={{ fontSize: "var(--font-size-body)" }}
-        >
+        <p className="fs-text-body mb-4 text-fs-secondary">
           Subscription management UI is not wired yet. Start or change a plan
           from pricing.
         </p>

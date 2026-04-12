@@ -66,14 +66,9 @@ export function AccountDrilldown({
 }) {
   if (drilldown.kind === "not_found") {
     return (
-      <div className="fs-card" style={{ padding: "32px" }}>
-        <p className="text-fs-red" style={{ fontWeight: 500 }}>
-          Account not found
-        </p>
-        <p
-          className="mt-2 text-fs-secondary"
-          style={{ fontSize: "var(--font-size-small)" }}
-        >
+      <div className="fs-card p-8">
+        <p className="font-medium text-fs-red">Account not found</p>
+        <p className="fs-text-small mt-2 text-fs-secondary">
           This client is not in your workspace or the URL is invalid.
         </p>
         <Link
@@ -97,17 +92,9 @@ export function AccountDrilldown({
             {metricTiles(report, metricsSnapshot)}
           </div>
         </div>
-        <div className="fs-card" style={{ padding: "32px" }}>
-          <p
-            className="fs-tag mb-3"
-            style={{ color: "var(--color-fs-secondary)" }}
-          >
-            ANALYSIS
-          </p>
-          <p
-            className="mb-4 text-fs-secondary"
-            style={{ fontSize: "var(--font-size-body)" }}
-          >
+        <div className="fs-card p-8">
+          <p className="fs-tag mb-3 text-fs-secondary">ANALYSIS</p>
+          <p className="fs-text-body mb-4 text-fs-secondary">
             No analysis available yet. Run your first analysis to see insights.
           </p>
           <RunAnalysisButton
@@ -129,33 +116,18 @@ export function AccountDrilldown({
       </div>
       <AnalysisReport report={report} />
       <div className="fs-card overflow-hidden">
-        <div
-          className="border-b border-fs-border px-6 py-4"
-          style={{ backgroundColor: "var(--color-fs-surface-2)" }}
-        >
-          <p className="fs-tag" style={{ color: "var(--color-fs-secondary)" }}>
-            ANALYSIS HISTORY
-          </p>
+        <div className="border-b border-fs-border bg-fs-surface-2 px-6 py-4">
+          <p className="fs-tag text-fs-secondary">ANALYSIS HISTORY</p>
         </div>
         {history.length === 0 ? (
           <div className="p-6">
-            <p
-              className="text-fs-secondary"
-              style={{ fontSize: "var(--font-size-small)" }}
-            >
+            <p className="fs-text-small text-fs-secondary">
               No previous analyses. Analyses run every Monday at 9am.
             </p>
           </div>
         ) : (
           <div>
-            <div
-              className="grid border-b border-fs-border px-6 py-3 text-fs-faded"
-              style={{
-                fontSize: "11px",
-                fontWeight: 500,
-                gridTemplateColumns: "1.5fr 1fr 88px",
-              }}
-            >
+            <div className="fs-text-label grid grid-cols-[1.5fr_1fr_88px] border-b border-fs-border px-6 py-3 font-medium text-fs-faded">
               <span>Started</span>
               <span>Period</span>
               <span className="text-right">Status</span>
@@ -163,15 +135,9 @@ export function AccountDrilldown({
             {history.map((row) => (
               <div
                 key={row.id}
-                className="grid items-center border-b border-fs-border px-6 py-3 last:border-b-0"
-                style={{
-                  gridTemplateColumns: "1.5fr 1fr 88px",
-                }}
+                className="grid grid-cols-[1.5fr_1fr_88px] items-center border-b border-fs-border px-6 py-3 last:border-b-0"
               >
-                <p
-                  className="font-mono text-fs-primary"
-                  style={{ fontSize: "var(--font-size-small)" }}
-                >
+                <p className="fs-text-small font-mono text-fs-primary">
                   {row.createdAt.toLocaleString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -180,10 +146,7 @@ export function AccountDrilldown({
                     minute: "2-digit",
                   })}
                 </p>
-                <p
-                  className="font-mono text-fs-secondary"
-                  style={{ fontSize: "var(--font-size-caption)" }}
-                >
+                <p className="fs-text-caption font-mono text-fs-secondary">
                   {row.periodStart.toLocaleDateString()} –{" "}
                   {row.periodEnd.toLocaleDateString()}
                 </p>

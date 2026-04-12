@@ -35,12 +35,7 @@ export default async function DashboardPage() {
       <header className="fs-page-header">
         <div>
           <p className="fs-breadcrumb">Overview</p>
-          <h1
-            className="text-fs-primary"
-            style={{ fontSize: "var(--font-size-heading)", fontWeight: 700 }}
-          >
-            Agency overview
-          </h1>
+          <h1 className="fs-page-title text-fs-primary">Agency overview</h1>
           {data.kind !== "no_ghl" ? (
             <p className="fs-breadcrumb">
               {lastLine

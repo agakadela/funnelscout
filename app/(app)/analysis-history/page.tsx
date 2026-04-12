@@ -4,22 +4,14 @@ export default function AnalysisHistoryPage() {
       <header className="fs-page-header">
         <div>
           <p className="fs-breadcrumb">Overview /</p>
-          <h1
-            className="text-fs-primary"
-            style={{ fontSize: "var(--font-size-heading)", fontWeight: 700 }}
-          >
-            Analysis history
-          </h1>
+          <h1 className="fs-page-title text-fs-primary">Analysis history</h1>
           <p className="fs-breadcrumb">
             Cross-account timeline is coming soon.
           </p>
         </div>
       </header>
       <div className="fs-card mt-6 p-8">
-        <p
-          className="text-fs-secondary"
-          style={{ fontSize: "var(--font-size-body)" }}
-        >
+        <p className="fs-text-body text-fs-secondary">
           Per-client runs and history stay on each account page for now. This
           view will aggregate completed analyses across all sub-accounts.
         </p>
