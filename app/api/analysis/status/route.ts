@@ -10,12 +10,7 @@ const QuerySchema = z.object({
   id: z.string().min(1),
 });
 
-const ApiStatusSchema = z.enum([
-  "pending",
-  "running",
-  "completed",
-  "failed",
-]);
+const ApiStatusSchema = z.enum(["pending", "running", "completed", "failed"]);
 
 function normalizeDbStatus(
   raw: string,

@@ -26,6 +26,7 @@ jobs:
       BETTER_AUTH_SECRET: ci-better-auth-secret-at-least-32-chars-long
       BETTER_AUTH_URL: https://example.com
       DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+      NEXT_PUBLIC_SENTRY_DSN: https://ci@o000000.ingest.sentry.io/0000000
       GHL_TOKEN_ENCRYPTION_KEY: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     steps:
       - uses: actions/checkout@v4
