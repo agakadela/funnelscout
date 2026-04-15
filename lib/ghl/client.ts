@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { eq } from "drizzle-orm";
 import { organizations } from "@/drizzle/schema";
 import { db } from "@/lib/db";
@@ -152,9 +153,9 @@ export async function fetchCompanyLocations(
   }
   const parsed = GhlLocationSearchResponseSchema.safeParse(json);
   if (!parsed.success) {
-    console.error(
-      "GHL locations response failed validation",
-      parsed.error.flatten(),
+    Sentry.captureException(
+      new Error("GHL locations response failed validation"),
+      { extra: { errors: parsed.error.flatten() } },
     );
     return [];
   }
@@ -196,9 +197,9 @@ export async function fetchOpportunities(
     }
     const parsed = GhlOpportunitySearchResponseSchema.safeParse(json);
     if (!parsed.success) {
-      console.error(
-        "GHL opportunities response failed validation",
-        parsed.error.flatten(),
+      Sentry.captureException(
+        new Error("GHL opportunities response failed validation"),
+        { extra: { errors: parsed.error.flatten(), locationId, page } },
       );
     }
     const batch = parsed.success ? (parsed.data.opportunities ?? []) : [];
