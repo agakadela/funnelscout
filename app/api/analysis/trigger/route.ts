@@ -6,6 +6,7 @@ import { getCachedAuthSession } from "@/lib/auth-session";
 import { prepareAccountAnalysis } from "@/lib/analysis/enqueue";
 import { organizations, subAccounts } from "@/drizzle/schema";
 import { db } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { inngest } from "@/inngest/client";
 
 const TriggerBodySchema = z.object({
@@ -45,6 +46,22 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: "Organization is not linked to this workspace" },
       { status: 400 },
+    );
+  }
+
+  const rate = checkRateLimit(orgRow.id);
+  if (!rate.allowed) {
+    const retryAfterSec = Math.max(1, Math.ceil(rate.retryAfterMs / 1000));
+    return NextResponse.json(
+      {
+        error:
+          "Too many analysis requests. Please wait before triggering another analysis.",
+        retryAfter: retryAfterSec,
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": String(retryAfterSec) },
+      },
     );
   }
 

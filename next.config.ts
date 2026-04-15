@@ -2,9 +2,24 @@ import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
 import { env } from "./lib/env";
 
-const isProd = process.env.NODE_ENV === "production";
-
 const securityHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' https://js.stripe.com",
+      "frame-src https://js.stripe.com",
+      "connect-src 'self' https://api.stripe.com https://*.sentry.io wss://*.sentry.io",
+      "img-src 'self' data: blob:",
+      "style-src 'self' 'unsafe-inline'",
+      "font-src 'self' data:",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "upgrade-insecure-requests",
+    ].join("; "),
+  },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "SAMEORIGIN" },
   {
@@ -15,14 +30,6 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
   },
-  ...(isProd
-    ? [
-        {
-          key: "Strict-Transport-Security",
-          value: "max-age=63072000; includeSubDomains; preload",
-        },
-      ]
-    : []),
 ] as const;
 
 const nextConfig: NextConfig = {
