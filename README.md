@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FunnelScout
 
-## Getting Started
+FunnelScout is AI-powered sales pipeline intelligence for small GoHighLevel agencies: connect GHL, ingest opportunity events, and get weekly analysis with revenue-focused recommendations.
 
-First, run the development server:
+## Requirements
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Node.js** 20.18+ (see `package.json` `engines`)
+- **pnpm** 10.x (see `packageManager` in `package.json`)
+- **Supabase** (PostgreSQL): project with connection strings in env (pooler + direct for migrations)
+- **Environment variables**: [`.env.example`](.env.example) lists keys and comments
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies: `pnpm install`
+2. Create **`.env.local`** from [`.env.example`](.env.example) and fill in real values for your Supabase project and integrations
+3. Apply database migrations: `pnpm db:migrate` (uses `DATABASE_URL_DIRECT` from your env)
+4. Start the app: `pnpm dev`, then open [http://localhost:3000](http://localhost:3000)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Background jobs use Inngest. Run `pnpm inngest:dev` in another terminal when you need the local worker.
 
-## Learn More
+## Common commands
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command        | Description              |
+| -------------- | ------------------------ |
+| `pnpm dev`     | Next.js dev server       |
+| `pnpm build`   | Production build         |
+| `pnpm test`    | Vitest (unit/integration)|
+| `pnpm db:studio` | Drizzle Kit Studio     |
+| `pnpm db:seed` | Seed script              |
