@@ -14,6 +14,7 @@ vi.mock("@/lib/db", () => ({
 
 import { checkPlanLimit, evaluatePlanLimit } from "@/lib/billing";
 import {
+  formatBillingPlanLabel,
   planPriceDisplayUsd,
   PLAN_CHECKOUT_AMOUNT_USD_CENTS,
 } from "@/lib/billing-plans";
@@ -164,5 +165,17 @@ describe("planPriceDisplayUsd", () => {
     expect(planPriceDisplayUsd("agency")).toBe("$99");
     expect(planPriceDisplayUsd("pro")).toBe("$199");
     expect(PLAN_CHECKOUT_AMOUNT_USD_CENTS.starter).toBe(4900);
+  });
+});
+
+describe("formatBillingPlanLabel", () => {
+  it("maps known plan ids to display names", () => {
+    expect(formatBillingPlanLabel("starter")).toBe("Starter");
+    expect(formatBillingPlanLabel("agency")).toBe("Agency");
+    expect(formatBillingPlanLabel("pro")).toBe("Pro");
+  });
+
+  it("title-cases unknown plan strings", () => {
+    expect(formatBillingPlanLabel("enterprise")).toBe("Enterprise");
   });
 });

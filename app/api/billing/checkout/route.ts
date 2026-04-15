@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -53,42 +54,50 @@ export async function POST(req: Request) {
 
   const origin = new URL(env.auth.url).origin;
 
-  const checkoutSession = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    success_url: `${origin}/dashboard`,
-    cancel_url: `${origin}/pricing`,
-    client_reference_id: organizationId,
-    metadata: {
-      organizationId,
-      plan,
-    },
-    subscription_data: {
+  try {
+    const checkoutSession = await stripe.checkout.sessions.create({
+      mode: "subscription",
+      success_url: `${origin}/billing?success=true`,
+      cancel_url: `${origin}/pricing`,
+      client_reference_id: organizationId,
       metadata: {
         organizationId,
         plan,
       },
-    },
-    line_items: [
-      {
-        quantity: 1,
-        price_data: {
-          currency: "usd",
-          unit_amount: PLAN_CHECKOUT_AMOUNT_USD_CENTS[plan],
-          recurring: { interval: "month" },
-          product_data: {
-            name: PLAN_CHECKOUT_PRODUCT_LABEL[plan],
-          },
+      subscription_data: {
+        metadata: {
+          organizationId,
+          plan,
         },
       },
-    ],
-  });
+      line_items: [
+        {
+          quantity: 1,
+          price_data: {
+            currency: "usd",
+            unit_amount: PLAN_CHECKOUT_AMOUNT_USD_CENTS[plan],
+            recurring: { interval: "month" },
+            product_data: {
+              name: PLAN_CHECKOUT_PRODUCT_LABEL[plan],
+            },
+          },
+        },
+      ],
+    });
 
-  if (!checkoutSession.url) {
+    if (!checkoutSession.url) {
+      return NextResponse.json(
+        { error: "Stripe did not return a checkout URL" },
+        { status: 502 },
+      );
+    }
+
+    return NextResponse.json({ url: checkoutSession.url });
+  } catch (err) {
+    Sentry.captureException(err);
     return NextResponse.json(
-      { error: "Stripe did not return a checkout URL" },
-      { status: 502 },
+      { error: "Failed to create checkout session. Please try again." },
+      { status: 500 },
     );
   }
-
-  return NextResponse.json({ url: checkoutSession.url });
 }
