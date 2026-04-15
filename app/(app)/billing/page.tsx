@@ -36,7 +36,7 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
   const session = await getCachedAuthSession();
   const betterAuthOrganizationId = session?.session?.activeOrganizationId;
   if (!betterAuthOrganizationId) {
-    redirect("/sign-up");
+    redirect("/create-workspace");
   }
 
   const ensured = await ensureAppOrganizationForBetterAuthOrg({

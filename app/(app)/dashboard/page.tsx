@@ -16,7 +16,7 @@ export default async function DashboardPage() {
   }
   const activeOrganizationId = session.session.activeOrganizationId;
   if (!activeOrganizationId) {
-    redirect("/sign-up");
+    redirect("/create-workspace");
   }
 
   const data = await loadAgencyOverviewData({
