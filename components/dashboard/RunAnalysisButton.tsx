@@ -2,8 +2,16 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { z } from "zod";
 
 type RunState = "idle" | "loading" | "success" | "error";
+
+type LoadingPhase = "queued" | "polling";
+
+const StatusBodySchema = z.object({
+  status: z.enum(["pending", "running", "completed", "failed"]),
+  errorMessage: z.string().optional(),
+});
 
 function Spinner() {
   return (
@@ -62,6 +70,7 @@ function IconX() {
         stroke="var(--color-fs-red)"
         strokeWidth="1.8"
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   );
@@ -73,6 +82,9 @@ type RunAnalysisButtonProps = {
   idleLabel?: string;
 };
 
+const POLL_MS = 5000;
+const POLL_DEADLINE_MS = 3 * 60 * 1000;
+
 export function RunAnalysisButton({
   subAccountId,
   disabled = false,
@@ -80,23 +92,154 @@ export function RunAnalysisButton({
 }: RunAnalysisButtonProps) {
   const router = useRouter();
   const [state, setState] = useState<RunState>("idle");
+  const [loadingPhase, setLoadingPhase] = useState<LoadingPhase>("queued");
   const [message, setMessage] = useState<string | null>(null);
+  const [messageTone, setMessageTone] = useState<"error" | "muted">("error");
   const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollDeadlineRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const ignorePollResultsRef = useRef(false);
+
+  function clearSuccessTimer() {
+    if (successTimer.current) {
+      clearTimeout(successTimer.current);
+      successTimer.current = null;
+    }
+  }
+
+  function stopPolling() {
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+    if (pollDeadlineRef.current) {
+      clearTimeout(pollDeadlineRef.current);
+      pollDeadlineRef.current = null;
+    }
+  }
 
   useEffect(() => {
     return () => {
-      if (successTimer.current) {
-        clearTimeout(successTimer.current);
-      }
+      clearSuccessTimer();
+      stopPolling();
     };
   }, []);
+
+  async function pollOnce(analysisId: string): Promise<boolean> {
+    const res = await fetch(
+      `/api/analysis/status?id=${encodeURIComponent(analysisId)}`,
+      { method: "GET" },
+    );
+    if (ignorePollResultsRef.current) {
+      return false;
+    }
+    const body: unknown = await res.json().catch(() => null);
+
+    if (ignorePollResultsRef.current) {
+      return false;
+    }
+
+    if (!res.ok) {
+      if (ignorePollResultsRef.current) {
+        return false;
+      }
+      const errText =
+        body &&
+        typeof body === "object" &&
+        "error" in body &&
+        typeof (body as { error: unknown }).error === "string"
+          ? (body as { error: string }).error
+          : "Request failed";
+      stopPolling();
+      setMessage(errText);
+      setMessageTone("error");
+      setState("error");
+      return true;
+    }
+
+    const parsed = StatusBodySchema.safeParse(body);
+    if (!parsed.success) {
+      if (ignorePollResultsRef.current) {
+        return false;
+      }
+      stopPolling();
+      setMessage("Invalid status response");
+      setMessageTone("error");
+      setState("error");
+      return true;
+    }
+
+    const { status, errorMessage } = parsed.data;
+
+    if (status === "completed") {
+      if (ignorePollResultsRef.current) {
+        return false;
+      }
+      stopPolling();
+      setState("success");
+      setMessage(null);
+      setMessageTone("error");
+      router.refresh();
+      clearSuccessTimer();
+      successTimer.current = setTimeout(() => {
+        setState("idle");
+      }, 2000);
+      return true;
+    }
+
+    if (status === "failed") {
+      if (ignorePollResultsRef.current) {
+        return false;
+      }
+      stopPolling();
+      const detail =
+        errorMessage && errorMessage.length > 0
+          ? errorMessage
+          : "Unknown error";
+      setMessage(`Analysis failed: ${detail}`);
+      setMessageTone("error");
+      setState("error");
+      return true;
+    }
+
+    return false;
+  }
+
+  function startPolling(analysisId: string) {
+    stopPolling();
+    ignorePollResultsRef.current = false;
+    setLoadingPhase("polling");
+
+    void pollOnce(analysisId);
+
+    pollIntervalRef.current = setInterval(() => {
+      void pollOnce(analysisId);
+    }, POLL_MS);
+
+    pollDeadlineRef.current = setTimeout(() => {
+      ignorePollResultsRef.current = true;
+      stopPolling();
+      setState("idle");
+      setLoadingPhase("queued");
+      setMessage(
+        "Analysis is taking longer than expected. Check back in a few minutes.",
+      );
+      setMessageTone("muted");
+    }, POLL_DEADLINE_MS);
+  }
 
   async function handleRun() {
     if (!subAccountId || disabled) {
       return;
     }
+    ignorePollResultsRef.current = true;
+    stopPolling();
+    clearSuccessTimer();
     setMessage(null);
+    setMessageTone("error");
     setState("loading");
+    setLoadingPhase("queued");
+
     try {
       const res = await fetch("/api/analysis/trigger", {
         method: "POST",
@@ -113,22 +256,37 @@ export function RunAnalysisButton({
             ? (body as { error: string }).error
             : "Request failed";
         setMessage(errText);
+        setMessageTone("error");
         setState("error");
         return;
       }
-      setState("success");
-      router.refresh();
-      successTimer.current = setTimeout(() => {
-        setState("idle");
-        setMessage(null);
-      }, 2000);
+
+      const analysisIdParsed = z
+        .object({ analysisId: z.string().min(1) })
+        .safeParse(body);
+
+      if (!analysisIdParsed.success) {
+        setMessage("Invalid trigger response");
+        setMessageTone("error");
+        setState("error");
+        return;
+      }
+
+      const { analysisId } = analysisIdParsed.data;
+      startPolling(analysisId);
     } catch {
       setMessage("Network error");
+      setMessageTone("error");
       setState("error");
     }
   }
 
   const isDisabled = disabled || !subAccountId || state === "loading";
+
+  const loadingLabel =
+    loadingPhase === "queued"
+      ? "Analysis queued..."
+      : "Analysis in progress...";
 
   return (
     <div className="flex flex-col items-end gap-2">
@@ -143,13 +301,13 @@ export function RunAnalysisButton({
         {state === "loading" && (
           <>
             <Spinner />
-            Analyzing…
+            {loadingLabel}
           </>
         )}
         {state === "success" && (
           <>
             <IconCheck />
-            Done
+            Analysis ready, refresh to see results
           </>
         )}
         {state === "error" && (
@@ -159,8 +317,12 @@ export function RunAnalysisButton({
           </>
         )}
       </button>
-      {message && state === "error" ? (
-        <p className="fs-text-caption max-w-xs text-right text-fs-red">
+      {message ? (
+        <p
+          className={`fs-text-caption max-w-xs text-right ${
+            messageTone === "error" ? "text-fs-red" : "text-fs-secondary"
+          }`}
+        >
           {message}
         </p>
       ) : null}
