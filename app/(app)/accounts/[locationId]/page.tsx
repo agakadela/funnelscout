@@ -18,7 +18,7 @@ export default async function AccountPage({ params }: AccountPageProps) {
   }
   const activeOrganizationId = session.session.activeOrganizationId;
   if (!activeOrganizationId) {
-    redirect("/sign-up");
+    redirect("/create-workspace");
   }
 
   const drilldown = await loadAccountDrilldownData({

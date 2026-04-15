@@ -5,6 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 import { authClient } from "@/lib/auth-client";
+import { isEmailNotVerifiedError } from "@/lib/auth-errors";
+import {
+  AUTH_NOTICE_QUERY_KEY,
+  AUTH_NOTICE_WORKSPACE_UNAVAILABLE,
+} from "@/lib/auth-ui-constants";
+import { useResendVerificationEmail } from "@/hooks/use-resend-verification-email";
 
 const GHL_ERROR_MESSAGES: Record<string, string> = {
   session_required:
@@ -13,6 +19,9 @@ const GHL_ERROR_MESSAGES: Record<string, string> = {
 
 const PASSWORD_RESET_NOTICE = "Password changed. Please sign in.";
 
+const WORKSPACE_UNAVAILABLE_NOTICE =
+  "We couldn’t load your workspace. Please sign in again. If this keeps happening, contact support.";
+
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -20,6 +29,14 @@ function SignInForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [emailNotVerified, setEmailNotVerified] = useState(false);
+
+  const resendVerification = useResendVerificationEmail({
+    getEmail: () => email,
+    emptyEmailMessage: "Enter your email address first.",
+    successMessage:
+      "If an account exists for that address, we sent a verification link.",
+  });
 
   const ghlErrorKey = searchParams.get("ghl_error");
   const ghlNotice =
@@ -32,9 +49,17 @@ function SignInForm() {
       ? PASSWORD_RESET_NOTICE
       : null;
 
+  const workspaceUnavailableNotice =
+    searchParams.get(AUTH_NOTICE_QUERY_KEY) ===
+    AUTH_NOTICE_WORKSPACE_UNAVAILABLE
+      ? WORKSPACE_UNAVAILABLE_NOTICE
+      : null;
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setEmailNotVerified(false);
+    resendVerification.clearFeedback();
     setPending(true);
     try {
       const res = await authClient.signIn.email({
@@ -42,6 +67,11 @@ function SignInForm() {
         password,
       });
       if (res.error) {
+        if (isEmailNotVerifiedError(res.error)) {
+          setEmailNotVerified(true);
+          setPending(false);
+          return;
+        }
         setError(res.error.message ?? "Sign-in failed");
         setPending(false);
         return;
@@ -66,7 +96,7 @@ function SignInForm() {
         }
         const orgs = orgList.data ?? [];
         if (orgs.length === 0) {
-          router.push("/sign-up");
+          router.push("/create-workspace");
           router.refresh();
           return;
         }
@@ -80,7 +110,7 @@ function SignInForm() {
         });
         const pick = sorted[0];
         if (!pick) {
-          router.push("/sign-up");
+          router.push("/create-workspace");
           router.refresh();
           return;
         }
@@ -132,6 +162,47 @@ function SignInForm() {
         >
           {passwordResetNotice}
         </p>
+      ) : null}
+
+      {workspaceUnavailableNotice ? (
+        <p
+          className="fs-text-caption mb-6 rounded-md border border-fs-border bg-fs-surface-2 px-3 py-2 text-fs-secondary"
+          role="status"
+        >
+          {workspaceUnavailableNotice}
+        </p>
+      ) : null}
+
+      {emailNotVerified ? (
+        <div
+          className="fs-text-caption mb-6 rounded-md border border-fs-border bg-fs-surface-2 px-3 py-3 text-fs-secondary"
+          role="status"
+        >
+          <p className="m-0">
+            Please verify your email before signing in. Check your inbox or
+            resend the verification email.
+          </p>
+          {resendVerification.error ? (
+            <p className="mt-2 text-fs-red" role="alert">
+              {resendVerification.error}
+            </p>
+          ) : null}
+          {resendVerification.message ? (
+            <p className="mt-2 text-fs-secondary">
+              {resendVerification.message}
+            </p>
+          ) : null}
+          <button
+            type="button"
+            className="mt-3 text-fs-amber hover:text-fs-amber-hover"
+            disabled={resendVerification.pending}
+            onClick={() => void resendVerification.resend()}
+          >
+            {resendVerification.pending
+              ? "Sending…"
+              : "Resend verification email"}
+          </button>
+        </div>
       ) : null}
 
       <form onSubmit={onSubmit} className="flex flex-col gap-5">

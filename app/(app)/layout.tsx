@@ -6,7 +6,12 @@ import { AppSidebar } from "@/components/dashboard/AppSidebar";
 import { organization as baOrganization } from "@/drizzle/better-auth-schema";
 import { organizations } from "@/drizzle/schema";
 import { getCachedAuthSession } from "@/lib/auth-session";
+import {
+  AUTH_NOTICE_QUERY_KEY,
+  AUTH_NOTICE_WORKSPACE_UNAVAILABLE,
+} from "@/lib/auth-ui-constants";
 import { db } from "@/lib/db";
+import { ensureAppOrganizationForBetterAuthOrg } from "@/lib/workspace-org";
 import {
   healthScoreFromPipelineSnapshot,
   healthTier,
@@ -39,7 +44,16 @@ export default async function AppLayout({
 
   const activeOrganizationId = session.session.activeOrganizationId;
   if (!activeOrganizationId) {
-    redirect("/sign-up");
+    redirect("/create-workspace");
+  }
+
+  const ensured = await ensureAppOrganizationForBetterAuthOrg({
+    betterAuthOrganizationId: activeOrganizationId,
+  });
+  if (!ensured.ok) {
+    redirect(
+      `/sign-in?${AUTH_NOTICE_QUERY_KEY}=${AUTH_NOTICE_WORKSPACE_UNAVAILABLE}`,
+    );
   }
 
   const orgRow = await db.query.organizations.findFirst({

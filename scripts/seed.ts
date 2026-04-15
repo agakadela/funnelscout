@@ -107,7 +107,13 @@ async function main(): Promise<void> {
         createdAt: authStamp,
         updatedAt: authStamp,
       })
-      .onConflictDoNothing({ target: user.id });
+      .onConflictDoUpdate({
+        target: user.id,
+        set: {
+          emailVerified: true,
+          updatedAt: new Date(),
+        },
+      });
 
     await db
       .insert(account)
