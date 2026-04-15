@@ -11,6 +11,7 @@ const hoisted = vi.hoisted(() => ({
   insertValuesPayload: null as Record<string, unknown> | null,
   updateSetPayload: null as Record<string, unknown> | null,
   selectFrom: vi.fn(),
+  captureMessage: vi.fn(),
 }));
 
 vi.mock("@/lib/stripe", () => ({
@@ -23,6 +24,10 @@ vi.mock("@/lib/stripe", () => ({
       update: hoisted.update,
     },
   },
+}));
+
+vi.mock("@sentry/nextjs", () => ({
+  captureMessage: hoisted.captureMessage,
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -68,6 +73,7 @@ describe("POST /api/webhooks/stripe", () => {
     hoisted.retrieve.mockReset();
     hoisted.update.mockReset();
     hoisted.selectFrom.mockReset();
+    hoisted.captureMessage.mockReset();
     hoisted.insertValuesPayload = null;
     hoisted.updateSetPayload = null;
   });
@@ -188,6 +194,54 @@ describe("POST /api/webhooks/stripe", () => {
       subAccountLimit: 999,
       status: "active",
     });
+  });
+
+  it("customer.subscription.updated returns 200 and warns Sentry when no DB row", async () => {
+    const subscription = makeStripeSubscription({
+      id: "sub_orphan",
+      status: "active",
+      metadata: { organizationId: "org-missing", plan: "pro" },
+    });
+
+    hoisted.constructEvent.mockReturnValue({
+      type: "customer.subscription.updated",
+      data: { object: subscription },
+    } as Stripe.Event);
+
+    hoisted.selectFrom.mockImplementation(() => ({
+      from: vi.fn((table: unknown) => {
+        if (table !== subscriptions) {
+          throw new Error("expected subscriptions query");
+        }
+        return {
+          where: vi.fn(() => ({
+            limit: vi.fn(() => Promise.resolve([])),
+          })),
+        };
+      }),
+    }));
+
+    const req = new NextRequest("http://localhost/api/webhooks/stripe", {
+      method: "POST",
+      headers: { "stripe-signature": "sig" },
+      body: "raw-body-orphan",
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(hoisted.captureMessage).toHaveBeenCalledTimes(1);
+    expect(hoisted.captureMessage).toHaveBeenCalledWith(
+      expect.stringContaining("subscription.updated"),
+      expect.objectContaining({
+        level: "warning",
+        extra: expect.objectContaining({
+          stripeSubscriptionId: "sub_orphan",
+          stripeSubscriptionStatus: "active",
+          organizationIdFromMetadata: "org-missing",
+          hasPlanInMetadata: true,
+        }),
+      }),
+    );
+    expect(hoisted.updateSetPayload).toBeNull();
   });
 
   it("customer.subscription.deleted sets subscription status to canceled", async () => {

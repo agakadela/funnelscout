@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse, type NextRequest } from "next/server";
 import { and, eq } from "drizzle-orm";
 import type Stripe from "stripe";
@@ -165,6 +166,23 @@ async function handleSubscriptionUpdated(
     .limit(1);
 
   if (!row) {
+    Sentry.captureMessage(
+      "Stripe webhook: subscription.updated matched metadata but no DB row",
+      {
+        level: "warning",
+        tags: {
+          stripe_webhook: "customer.subscription.updated",
+        },
+        extra: {
+          stripeSubscriptionId: subscription.id,
+          stripeSubscriptionStatus: subscription.status,
+          organizationIdFromMetadata: meta.data.organizationId,
+          hasPlanInMetadata: BillingPlanSchema.safeParse(
+            subscription.metadata?.plan,
+          ).success,
+        },
+      },
+    );
     return NextResponse.json({ ok: true }, { status: 200 });
   }
 

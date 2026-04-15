@@ -219,16 +219,6 @@ export default function SignUpPage() {
         </button>
       </form>
 
-      <div className="my-8 flex items-center gap-3 text-fs-faded">
-        <div className="h-px flex-1 bg-fs-border" />
-        <span className="fs-text-label font-mono">or</span>
-        <div className="h-px flex-1 bg-fs-border" />
-      </div>
-
-      <button type="button" className="fs-btn-outline w-full py-2.5" disabled>
-        Continue with Google
-      </button>
-
       <p className="fs-text-caption mt-8 text-center text-fs-faded">
         Already have an account?{" "}
         <Link
