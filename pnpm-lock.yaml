@@ -84,6 +84,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.0.6
         version: 4.1.4(vitest@4.1.4)
+      dotenv:
+        specifier: ^16.4.7
+        version: 16.6.1
       drizzle-kit:
         specifier: ^0.31.4
         version: 0.31.10

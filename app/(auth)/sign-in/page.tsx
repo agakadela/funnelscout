@@ -39,6 +39,56 @@ function SignInForm() {
         setPending(false);
         return;
       }
+
+      const sessionRes = await authClient.getSession();
+      if (sessionRes.error) {
+        setError(sessionRes.error.message ?? "Sign-in failed");
+        setPending(false);
+        return;
+      }
+
+      const activeOrganizationId =
+        sessionRes.data?.session.activeOrganizationId ?? null;
+
+      if (!activeOrganizationId) {
+        const orgList = await authClient.organization.list();
+        if (orgList.error) {
+          setError(orgList.error.message ?? "Could not load your workspace");
+          setPending(false);
+          return;
+        }
+        const orgs = orgList.data ?? [];
+        if (orgs.length === 0) {
+          router.push("/sign-up");
+          router.refresh();
+          return;
+        }
+        const sorted = [...orgs].sort((a, b) => {
+          const na = a.name ?? "";
+          const nb = b.name ?? "";
+          if (na !== nb) {
+            return na.localeCompare(nb);
+          }
+          return a.id.localeCompare(b.id);
+        });
+        const pick = sorted[0];
+        if (!pick) {
+          router.push("/sign-up");
+          router.refresh();
+          return;
+        }
+        const activeRes = await authClient.organization.setActive({
+          organizationId: pick.id,
+        });
+        if (activeRes.error) {
+          setError(
+            activeRes.error.message ?? "Could not activate your workspace",
+          );
+          setPending(false);
+          return;
+        }
+      }
+
       router.push("/dashboard");
       router.refresh();
     } catch {

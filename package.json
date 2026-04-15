@@ -17,7 +17,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx scripts/seed.ts",
+    "db:seed": "tsx scripts/run-db-seed.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -50,6 +50,7 @@
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.5.2",
     "@vitest/coverage-v8": "^4.0.6",
+    "dotenv": "^16.4.7",
     "drizzle-kit": "^0.31.4",
     "eslint": "^9.28.0",
     "eslint-config-next": "16.2.3",

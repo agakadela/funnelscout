@@ -1,10 +1,16 @@
+import { hashPassword } from "better-auth/crypto";
 import {
   CLAUDE_SONNET_MODEL,
   COST_LOG_STEPS,
   type CostLogStep,
 } from "@/lib/ai/types";
 import { calculateCost, formatCostUsd } from "@/lib/ai/cost";
-import { organization as betterAuthOrganization } from "@/drizzle/better-auth-schema";
+import {
+  account,
+  member,
+  organization as betterAuthOrganization,
+  user,
+} from "@/drizzle/better-auth-schema";
 import {
   analyses,
   costLogs,
@@ -44,6 +50,9 @@ const SEED_AGENCY_NAMES = [
 
 const SEED_TOKEN_PLACEHOLDER = "seed-token-not-for-production";
 
+/** Shared password for all seed demo users (dev / local only). */
+const SEED_OWNER_PASSWORD = "SeedPass123!";
+
 function costLogTokensForStep(step: CostLogStep): {
   inputTokens: number;
   outputTokens: number;
@@ -63,6 +72,8 @@ async function main(): Promise<void> {
   const refresh = encryptGhlToken(`${SEED_TOKEN_PLACEHOLDER}-refresh`);
   const expiresAt = new Date(SEED_HISTORY_END_UTC.getTime() + 86_400_000 * 30);
   const reportJson = buildSeedDemoAnalysisReportJson();
+  const credentialPasswordHash = await hashPassword(SEED_OWNER_PASSWORD);
+  const authStamp = SEED_HISTORY_START_UTC;
 
   for (let orgIndex = 0; orgIndex < 3; orgIndex++) {
     const orgNum = orgIndex + 1;
@@ -70,6 +81,10 @@ async function main(): Promise<void> {
     const slug = `funnelscout-seed-agency-${pad2(orgNum)}`;
     const workspaceId = `seed_workspace_${pad2(orgNum)}`;
     const agencyName = SEED_AGENCY_NAMES[orgIndex] ?? SEED_AGENCY_NAMES[0];
+    const ownerUserId = `seed_user_${pad2(orgNum)}`;
+    const ownerEmail = `seed.owner.${pad2(orgNum)}@funnelscout.local`;
+    const ownerAccountId = `seed_account_${pad2(orgNum)}`;
+    const ownerMemberId = `seed_member_${pad2(orgNum)}`;
 
     await db
       .insert(betterAuthOrganization)
@@ -80,6 +95,43 @@ async function main(): Promise<void> {
         createdAt: SEED_HISTORY_START_UTC,
       })
       .onConflictDoNothing({ target: betterAuthOrganization.id });
+
+    await db
+      .insert(user)
+      .values({
+        id: ownerUserId,
+        name: `${agencyName} owner`,
+        email: ownerEmail,
+        emailVerified: true,
+        image: null,
+        createdAt: authStamp,
+        updatedAt: authStamp,
+      })
+      .onConflictDoNothing({ target: user.id });
+
+    await db
+      .insert(account)
+      .values({
+        id: ownerAccountId,
+        accountId: ownerUserId,
+        providerId: "credential",
+        userId: ownerUserId,
+        password: credentialPasswordHash,
+        createdAt: authStamp,
+        updatedAt: authStamp,
+      })
+      .onConflictDoNothing({ target: account.id });
+
+    await db
+      .insert(member)
+      .values({
+        id: ownerMemberId,
+        organizationId: baId,
+        userId: ownerUserId,
+        role: "owner",
+        createdAt: authStamp,
+      })
+      .onConflictDoNothing({ target: member.id });
 
     await db
       .insert(organizations)
@@ -149,11 +201,7 @@ async function main(): Promise<void> {
           subAccountId: subId,
           ghlOpportunityId: ev.ghlOpportunityId,
           ghlEventId: ev.ghlEventId,
-          ghlContactId: seedGhlContactId(
-            orgIndex,
-            subIndex,
-            contactSeq + idx,
-          ),
+          ghlContactId: seedGhlContactId(orgIndex, subIndex, contactSeq + idx),
           ghlPipelineId: SEED_PIPELINE_ID,
           ghlPipelineStageId: ev.ghlPipelineStageId,
           eventType: ev.eventType,
@@ -227,17 +275,24 @@ async function main(): Promise<void> {
   }
 }
 
-try {
-  await main();
-  console.info(
-    "Seed completed (idempotent — skipped rows that already exist by primary key).",
-  );
-  console.info(
-    "BetterAuth organization ids: seed_bauth_org_01, seed_bauth_org_02, seed_bauth_org_03 — add a member row to browse this data in the app.",
-  );
-} catch (err) {
-  console.error(err);
-  process.exitCode = 1;
-} finally {
-  await closeDatabaseConnection();
-}
+void (async (): Promise<void> => {
+  try {
+    await main();
+    console.info(
+      "Seed completed (idempotent — skipped rows that already exist by primary key).",
+    );
+    console.info(
+      [
+        "Seed users (sign in with email + password):",
+        "  seed.owner.01@funnelscout.local / seed.owner.02@funnelscout.local / seed.owner.03@funnelscout.local",
+        `  password: ${SEED_OWNER_PASSWORD}`,
+        "Each account is owner of one demo agency (BetterAuth org ↔ workspace already linked).",
+      ].join("\n"),
+    );
+  } catch (err) {
+    console.error(err);
+    process.exitCode = 1;
+  } finally {
+    await closeDatabaseConnection();
+  }
+})();
