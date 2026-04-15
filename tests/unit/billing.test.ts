@@ -49,13 +49,13 @@ function mockSubAccountCountSelect(n: number) {
 describe("evaluatePlanLimit", () => {
   const activeSubscription = { status: "active", subAccountLimit: 5 };
 
-  it("blocks analysis when active sub-account count equals the limit", () => {
+  it("allows analysis when active sub-account count equals the limit", () => {
     expect(
       evaluatePlanLimit({
         subscription: activeSubscription,
         activeSubAccountCount: 5,
       }),
-    ).toEqual({ allowed: false, reason: "limit_reached" });
+    ).toEqual({ allowed: true });
   });
 
   it("blocks analysis when active sub-account count exceeds the limit", () => {
@@ -110,17 +110,14 @@ describe("checkPlanLimit", () => {
     await expect(checkPlanLimit("org-1")).resolves.toEqual({ allowed: true });
   });
 
-  it("blocks analysis when active sub-account count reaches the plan limit", async () => {
+  it("allows analysis when active sub-account count equals the plan limit", async () => {
     hoisted.selectFrom
       .mockImplementationOnce(() =>
         mockSubscriptionSelect([{ status: "active", subAccountLimit: 5 }]),
       )
       .mockImplementationOnce(() => mockSubAccountCountSelect(5));
 
-    await expect(checkPlanLimit("org-1")).resolves.toEqual({
-      allowed: false,
-      reason: "limit_reached",
-    });
+    await expect(checkPlanLimit("org-1")).resolves.toEqual({ allowed: true });
   });
 
   it("blocks analysis when active sub-account count exceeds the plan limit", async () => {

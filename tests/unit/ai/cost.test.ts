@@ -1,9 +1,21 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const hoisted = vi.hoisted(() => ({
+  captureException: vi.fn(),
+}));
+
+vi.mock("@sentry/nextjs", () => ({
+  captureException: hoisted.captureException,
+}));
 
 import { calculateCost } from "@/lib/ai/cost";
 import { AnalysisReportSchema, CLAUDE_SONNET_MODEL } from "@/lib/ai/types";
 
 describe("calculateCost", () => {
+  beforeEach(() => {
+    hoisted.captureException.mockReset();
+  });
+
   it("returns 0 for zero tokens", () => {
     expect(calculateCost(CLAUDE_SONNET_MODEL, 0, 0)).toBe(0);
   });
@@ -25,10 +37,12 @@ describe("calculateCost", () => {
     expect(calculateCost(CLAUDE_SONNET_MODEL, 1000, 500)).toBe(0.0105);
   });
 
-  it("rejects unsupported models", () => {
-    expect(() => calculateCost("other-model", 1, 0)).toThrow(
-      "Unsupported model for cost calculation",
-    );
+  it("uses Sonnet 4.6 pricing as fallback for unknown models and reports to Sentry", () => {
+    expect(calculateCost("other-model", 1_000_000, 0)).toBe(3);
+    expect(hoisted.captureException).toHaveBeenCalledTimes(1);
+    const err = hoisted.captureException.mock.calls[0][0];
+    expect(err).toBeInstanceOf(Error);
+    expect((err as Error).message).toContain("Unsupported model");
   });
 
   it("rejects negative token counts", () => {

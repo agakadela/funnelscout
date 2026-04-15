@@ -45,6 +45,7 @@ import {
   parseJsonFromModelText,
   runMultiStepAnalysisAgent,
 } from "@/lib/ai/agent";
+import { CLAUDE_SONNET_MODEL } from "@/lib/ai/types";
 
 const metricsPayload = {
   headline: "Week",
@@ -79,7 +80,7 @@ function assistantMessage(text: string, input: number, output: number) {
     id: "msg_1",
     type: "message" as const,
     role: "assistant" as const,
-    model: "claude-sonnet-4-6-20260218",
+    model: CLAUDE_SONNET_MODEL,
     content: [{ type: "text" as const, text, citations: null }],
     stop_reason: "end_turn" as const,
     stop_sequence: null,
@@ -135,7 +136,7 @@ describe("runMultiStepAnalysisAgent", () => {
     ]);
     expect(costLogRows[0]).toMatchObject({
       analysisId: "analysis-1",
-      model: "claude-sonnet-4-6-20260218",
+      model: CLAUDE_SONNET_MODEL,
       inputTokens: 100,
       outputTokens: 40,
       triggeredBy: "manual",
