@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const CLAUDE_SONNET_MODEL = "claude-sonnet-4-6-20260218" as const;
+export const CLAUDE_SONNET_MODEL = "claude-sonnet-4-6" as const;
 
 export const COST_LOG_STEPS = [
   "metrics",

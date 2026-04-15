@@ -36,7 +36,7 @@ export function evaluatePlanLimit(
   if (input.subscription.status !== "active") {
     return { allowed: false, reason: "subscription_inactive" };
   }
-  if (input.activeSubAccountCount >= input.subscription.subAccountLimit) {
+  if (input.activeSubAccountCount > input.subscription.subAccountLimit) {
     return { allowed: false, reason: "limit_reached" };
   }
   return { allowed: true };
