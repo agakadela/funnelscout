@@ -10,6 +10,23 @@ jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # `lib/env.ts` validates on import — CI must provide syntactically valid placeholders
+    # (not real secrets). Production uses GitHub Environment secrets / Vercel env instead.
+    env:
+      GHL_CLIENT_ID: ci-ghl-client-id
+      GHL_CLIENT_SECRET: ci-ghl-client-secret
+      GHL_WEBHOOK_SECRET: ci-ghl-webhook-secret
+      GHL_REDIRECT_URI: https://example.com/api/ghl/oauth/callback
+      STRIPE_SECRET_KEY: sk_test_ci_placeholder_not_real
+      STRIPE_WEBHOOK_SECRET: whsec_ci_placeholder_not_real
+      ANTHROPIC_API_KEY: sk-ant-api03-ci-placeholder-not-real
+      RESEND_API_KEY: re_ci_placeholder_not_real
+      INNGEST_EVENT_KEY: ci-inngest-event-key
+      INNGEST_SIGNING_KEY: ci-inngest-signing-key
+      BETTER_AUTH_SECRET: ci-better-auth-secret-at-least-32-chars-long
+      BETTER_AUTH_URL: https://example.com
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci
+      GHL_TOKEN_ENCRYPTION_KEY: deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef
     steps:
       - uses: actions/checkout@v4
 
