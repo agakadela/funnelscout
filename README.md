@@ -2,19 +2,6 @@
 
 FunnelScout is AI-powered sales pipeline intelligence for small GoHighLevel agencies: connect GHL, ingest opportunity events, and get weekly analysis with revenue-focused recommendations.
 
-## Documentation
-
-Engineering and product context live in [`docs/`](docs/):
-
-- [Product specification](docs/spec.md)
-- [Project layout and layer rules](docs/project.md)
-- [UI design system](docs/ui.md)
-- [Architecture and data flows](docs/architecture.md)
-- [Testing strategy](docs/testing.md)
-- [Phased implementation plan](docs/plan.md)
-- [Launch / audit plans](docs/plan-etap2.md) and [AUDIT](docs/AUDIT.md)
-
-Agent and contributor constraints: [`AGENTS.md`](AGENTS.md)
 
 ## Requirements
 
