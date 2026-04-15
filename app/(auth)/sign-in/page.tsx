@@ -11,6 +11,8 @@ const GHL_ERROR_MESSAGES: Record<string, string> = {
     "Your session expired before GoHighLevel could finish connecting. Sign in, then connect GHL again from the dashboard.",
 };
 
+const PASSWORD_RESET_NOTICE = "Password changed. Please sign in.";
+
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -23,6 +25,11 @@ function SignInForm() {
   const ghlNotice =
     ghlErrorKey != null && ghlErrorKey !== ""
       ? (GHL_ERROR_MESSAGES[ghlErrorKey] ?? null)
+      : null;
+
+  const passwordResetNotice =
+    searchParams.get("notice") === "password_reset"
+      ? PASSWORD_RESET_NOTICE
       : null;
 
   async function onSubmit(e: React.FormEvent) {
@@ -118,6 +125,15 @@ function SignInForm() {
         </p>
       ) : null}
 
+      {passwordResetNotice ? (
+        <p
+          className="fs-text-caption mb-6 rounded-md border border-fs-border bg-fs-surface-2 px-3 py-2 text-fs-secondary"
+          role="status"
+        >
+          {passwordResetNotice}
+        </p>
+      ) : null}
+
       <form onSubmit={onSubmit} className="flex flex-col gap-5">
         <div>
           <label htmlFor="email" className="fs-input-label">
@@ -148,6 +164,14 @@ function SignInForm() {
             value={password}
             onChange={(ev) => setPassword(ev.target.value)}
           />
+          <p className="fs-text-caption mt-2 text-right">
+            <Link
+              href="/forgot-password"
+              className="text-fs-amber hover:text-fs-amber-hover"
+            >
+              Forgot password?
+            </Link>
+          </p>
         </div>
         {error ? (
           <p className="fs-text-caption text-fs-red" role="alert">

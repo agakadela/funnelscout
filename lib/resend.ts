@@ -1,6 +1,7 @@
 import * as React from "react";
 import { render } from "@react-email/render";
 import { Resend } from "resend";
+import ResetPasswordEmail from "@/emails/reset-password";
 import WeeklyDigestEmail from "@/emails/WeeklyDigest";
 import { env } from "@/lib/env";
 
@@ -32,6 +33,26 @@ export async function sendWeeklyDigestEmail(params: {
     from: TRANSACTIONAL_FROM,
     to: params.to,
     subject: `Weekly pipeline digest — ${params.subAccountName}`,
+    html,
+  });
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function sendPasswordResetEmail(params: {
+  to: string;
+  resetUrl: string;
+}): Promise<void> {
+  const html = await render(
+    React.createElement(ResetPasswordEmail, {
+      resetUrl: params.resetUrl,
+    }),
+  );
+  const { error } = await resend.emails.send({
+    from: TRANSACTIONAL_FROM,
+    to: params.to,
+    subject: "Reset your FunnelScout password",
     html,
   });
   if (error) {
