@@ -161,25 +161,28 @@ export const analyzeAccount = inngest.createFunction(
         );
     });
 
-    try {
-      await runMultiStepAnalysisAgent({
-        organizationId: data.organizationId,
-        analysisId: data.analysisId,
-        triggeredBy: data.triggeredBy,
-        metricsSnapshot,
-      });
-    } catch (err) {
-      Sentry.withScope((scope) => {
-        scope.setTag("inngest.function", "analyze-account");
-        scope.setContext("tenant", {
+    await step.run("run-agent", async () => {
+      try {
+        // Inngest memoizes completed steps: retries skip re-running Claude and duplicate cost_logs inserts.
+        await runMultiStepAnalysisAgent({
           organizationId: data.organizationId,
           analysisId: data.analysisId,
-          subAccountId: data.subAccountId,
+          triggeredBy: data.triggeredBy,
+          metricsSnapshot,
         });
-        Sentry.captureException(err);
-      });
-      throw err;
-    }
+      } catch (err) {
+        Sentry.withScope((scope) => {
+          scope.setTag("inngest.function", "analyze-account");
+          scope.setContext("tenant", {
+            organizationId: data.organizationId,
+            analysisId: data.analysisId,
+            subAccountId: data.subAccountId,
+          });
+          Sentry.captureException(err);
+        });
+        throw err;
+      }
+    });
 
     await step.run("weekly-digest-email", async () => {
       const row = await db.query.analyses.findFirst({

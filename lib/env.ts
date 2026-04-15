@@ -2,49 +2,60 @@ import { z } from "zod";
 
 import { nextPublicSentryDsnSchema } from "./env/next-public-sentry-dsn";
 
-const envSchema = z.object({
-  NODE_ENV: z.preprocess(
-    (val: unknown) => {
-      if (val === "production") return "production";
-      if (val === "test") return "test";
-      return "development";
-    },
-    z.enum(["development", "production", "test"]),
-  ),
-  GHL_CLIENT_ID: z.string().min(1),
-  GHL_CLIENT_SECRET: z.string().min(1),
-  GHL_WEBHOOK_SECRET: z.string().min(1),
-  GHL_REDIRECT_URI: z.string().url(),
-  STRIPE_SECRET_KEY: z.string().min(1),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1),
-  ANTHROPIC_API_KEY: z.string().min(1),
-  RESEND_API_KEY: z.string().min(1),
-  INNGEST_EVENT_KEY: z.string().min(1),
-  INNGEST_SIGNING_KEY: z.string().min(1),
-  BETTER_AUTH_SECRET: z.string().min(1),
-  BETTER_AUTH_URL: z.string().url(),
-  DATABASE_URL: z.string().min(1),
-  NEXT_RUNTIME: z.enum(["nodejs", "edge"]).optional(),
-  NEXT_PUBLIC_SENTRY_DSN: nextPublicSentryDsnSchema,
-  SENTRY_ORG: z.string().min(1).optional(),
-  SENTRY_PROJECT: z.string().min(1).optional(),
-  SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
-  GHL_TOKEN_ENCRYPTION_KEY: z
-    .string()
-    .length(64)
-    .refine((key) => !/^0{64}$/.test(key), {
-      message:
-        "GHL_TOKEN_ENCRYPTION_KEY must not be all zeros — use: openssl rand -hex 32",
-    }),
-  GHL_WEBHOOK_RATE_LIMIT_PER_IP_PER_MINUTE: z
-    .string()
-    .optional()
-    .transform((raw) => {
-      if (raw === undefined || raw.trim() === "") return 0;
-      const n = Number.parseInt(raw, 10);
-      return Number.isFinite(n) && n >= 0 ? n : 0;
-    }),
-});
+const envSchema = z
+  .object({
+    NODE_ENV: z.preprocess(
+      (val: unknown) => {
+        if (val === "production") return "production";
+        if (val === "test") return "test";
+        return "development";
+      },
+      z.enum(["development", "production", "test"]),
+    ),
+    GHL_CLIENT_ID: z.string().min(1),
+    GHL_CLIENT_SECRET: z.string().min(1),
+    GHL_WEBHOOK_SECRET: z.string().min(1),
+    GHL_REDIRECT_URI: z.string().url(),
+    STRIPE_SECRET_KEY: z.string().min(1),
+    STRIPE_WEBHOOK_SECRET: z.string().min(1),
+    ANTHROPIC_API_KEY: z.string().min(1),
+    RESEND_API_KEY: z.string().min(1),
+    INNGEST_EVENT_KEY: z.string().min(1),
+    INNGEST_SIGNING_KEY: z.string().min(1),
+    BETTER_AUTH_SECRET: z.string().min(1),
+    BETTER_AUTH_URL: z.string().url(),
+    DATABASE_URL: z.string().min(1),
+    NEXT_RUNTIME: z.enum(["nodejs", "edge"]).optional(),
+    NEXT_PUBLIC_SENTRY_DSN: nextPublicSentryDsnSchema,
+    SENTRY_ORG: z.string().min(1).optional(),
+    SENTRY_PROJECT: z.string().min(1).optional(),
+    SENTRY_AUTH_TOKEN: z.string().min(1).optional(),
+    GHL_TOKEN_ENCRYPTION_KEY: z
+      .string()
+      .length(64)
+      .refine((key) => !/^0{64}$/.test(key), {
+        message:
+          "GHL_TOKEN_ENCRYPTION_KEY must not be all zeros — use: openssl rand -hex 32",
+      }),
+    GHL_WEBHOOK_RATE_LIMIT_PER_IP_PER_MINUTE: z
+      .string()
+      .optional()
+      .transform((raw) => {
+        if (raw === undefined || raw.trim() === "") return 0;
+        const n = Number.parseInt(raw, 10);
+        return Number.isFinite(n) && n >= 0 ? n : 0;
+      }),
+  })
+  .superRefine((data, ctx) => {
+    if (data.NODE_ENV === "production" && !data.NEXT_PUBLIC_SENTRY_DSN) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "NEXT_PUBLIC_SENTRY_DSN is required in production (Sentry browser DSN URL).",
+        path: ["NEXT_PUBLIC_SENTRY_DSN"],
+      });
+    }
+  });
 
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {

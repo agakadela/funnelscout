@@ -74,7 +74,10 @@ describe("GET /api/analysis/status", () => {
     });
     const res = await GET(statusRequest("analysis-1"));
     expect(res.status).toBe(200);
-    const json = (await res.json()) as { status: string; errorMessage?: string };
+    const json = (await res.json()) as {
+      status: string;
+      errorMessage?: string;
+    };
     expect(json.status).toBe("pending");
     expect(json.errorMessage).toBeUndefined();
   });

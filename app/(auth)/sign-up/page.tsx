@@ -10,6 +10,8 @@ import {
 } from "@/lib/auth-ui-constants";
 import { useResendVerificationEmail } from "@/hooks/use-resend-verification-email";
 
+const MIN_PASSWORD_LEN = 8;
+
 type Phase = "form" | "check_email";
 
 export default function SignUpPage() {
@@ -18,6 +20,7 @@ export default function SignUpPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordTooShort, setPasswordTooShort] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
@@ -29,6 +32,11 @@ export default function SignUpPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setPasswordTooShort(false);
+    if (password.length < MIN_PASSWORD_LEN) {
+      setPasswordTooShort(true);
+      return;
+    }
     setPending(true);
     try {
       const signUp = await authClient.signUp.email({
@@ -146,7 +154,7 @@ export default function SignUpPage() {
         </p>
       </div>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-5">
+      <form noValidate onSubmit={onSubmit} className="flex flex-col gap-5">
         <div>
           <label htmlFor="agencyName" className="fs-input-label">
             Agency name
@@ -202,8 +210,16 @@ export default function SignUpPage() {
             required
             className="fs-input"
             value={password}
-            onChange={(ev) => setPassword(ev.target.value)}
+            onChange={(ev) => {
+              setPassword(ev.target.value);
+              setPasswordTooShort(false);
+            }}
           />
+          {passwordTooShort ? (
+            <p className="fs-text-caption mt-1.5 text-fs-red" role="alert">
+              Password must be at least {MIN_PASSWORD_LEN} characters.
+            </p>
+          ) : null}
         </div>
         {error ? (
           <p className="fs-text-caption text-fs-red" role="alert">

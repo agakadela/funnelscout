@@ -17,6 +17,8 @@ import {
   healthTier,
 } from "@/lib/dashboard/health-score";
 import { loadSubAccountsMetricsContext } from "@/lib/dashboard/load-sub-accounts-metrics-context";
+import { GhlReconnectBanner } from "@/components/dashboard/GhlReconnectBanner";
+import { needsGhlOAuthReconnect } from "@/lib/ghl/reconnect-state";
 
 function sidebarInitials(name: string, email: string): string {
   const n = name.trim();
@@ -75,6 +77,15 @@ export default async function AppLayout({
   }
 
   const ghlConnected = Boolean(orgRow?.ghlAccessToken);
+  const showGhlReconnectBanner = Boolean(
+    orgRow &&
+    needsGhlOAuthReconnect({
+      ghlAgencyId: orgRow.ghlAgencyId,
+      ghlAccessToken: orgRow.ghlAccessToken,
+      ghlRefreshToken: orgRow.ghlRefreshToken,
+      ghlTokenExpiresAt: orgRow.ghlTokenExpiresAt,
+    }),
+  );
 
   let sidebarClients: Array<{
     id: string;
@@ -116,7 +127,10 @@ export default async function AppLayout({
         userInitials={userInitials}
         clientCount={sidebarClients.length}
       />
-      <div className="fs-main">{children}</div>
+      <div className="fs-main">
+        {showGhlReconnectBanner ? <GhlReconnectBanner /> : null}
+        {children}
+      </div>
     </div>
   );
 }

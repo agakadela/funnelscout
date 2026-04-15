@@ -5,12 +5,33 @@ export function resetGhlWebhookRateLimitBucketsForTests(): void {
   buckets.clear();
 }
 
+/** Test hook: bucket count after pruning stale client keys. */
+export function getGhlWebhookRateLimitBucketKeyCountForTests(): number {
+  return buckets.size;
+}
+
+function pruneBucketsOutsideWindow(nowMs: number): void {
+  const windowStart = nowMs - WINDOW_MS;
+  for (const [key, stamps] of buckets) {
+    const fresh = stamps.filter((t) => t > windowStart);
+    if (fresh.length === 0) {
+      buckets.delete(key);
+    } else if (fresh.length !== stamps.length) {
+      buckets.set(key, fresh);
+    }
+  }
+}
+
 export function tryConsumeGhlWebhookRateSlot(
   clientKey: string,
   maxPerMinute: number,
   nowMs: number = Date.now(),
 ): boolean {
-  if (maxPerMinute <= 0) return true;
+  pruneBucketsOutsideWindow(nowMs);
+
+  if (maxPerMinute <= 0) {
+    return true;
+  }
 
   const windowStart = nowMs - WINDOW_MS;
   const prior = buckets.get(clientKey) ?? [];
