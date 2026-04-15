@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 export {
   BillingPlanSchema,
   type BillingPlan,
+  formatBillingPlanLabel,
   PLAN_CHECKOUT_AMOUNT_USD_CENTS,
   PLAN_CHECKOUT_PRODUCT_LABEL,
   PLAN_LIMITS,

@@ -12,6 +12,21 @@ export type BillingPlan = keyof typeof PLAN_LIMITS;
 
 export const BillingPlanSchema = z.enum(["starter", "agency", "pro"]);
 
+const PLAN_DISPLAY_NAME: Record<BillingPlan, string> = {
+  starter: "Starter",
+  agency: "Agency",
+  pro: "Pro",
+};
+
+export function formatBillingPlanLabel(plan: string): string {
+  const parsed = BillingPlanSchema.safeParse(plan);
+  return parsed.success
+    ? PLAN_DISPLAY_NAME[parsed.data]
+    : plan.length > 0
+      ? `${plan[0]?.toUpperCase() ?? ""}${plan.slice(1)}`
+      : plan;
+}
+
 export const PLAN_CHECKOUT_AMOUNT_USD_CENTS: Record<BillingPlan, number> = {
   starter: 4900,
   agency: 9900,
