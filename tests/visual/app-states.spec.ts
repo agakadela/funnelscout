@@ -23,7 +23,9 @@ async function gotoMarketingHome(
   ).toBeVisible();
 }
 
-async function gotoSignIn(page: import("@playwright/test").Page): Promise<void> {
+async function gotoSignIn(
+  page: import("@playwright/test").Page,
+): Promise<void> {
   await page.goto("/sign-in", { waitUntil: "domcontentloaded" });
   await expect(page.getByLabel("Email")).toBeVisible();
 }
