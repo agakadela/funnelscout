@@ -26,9 +26,7 @@ function buildContentSecurityPolicy(nonce: string, isDev: boolean): string {
     ...(isDev ? ["'unsafe-eval'"] : []),
   ].join(" ");
 
-  const styleSrc = isDev
-    ? "'self' 'unsafe-inline'"
-    : `'self' 'nonce-${nonce}'`;
+  const styleSrc = isDev ? "'self' 'unsafe-inline'" : `'self' 'nonce-${nonce}'`;
 
   return [
     "default-src 'self'",

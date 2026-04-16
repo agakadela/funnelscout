@@ -12,6 +12,7 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "coverage/**",
+    "test-results/**",
     ".claude/**",
     "next-env.d.ts",
     "pnpm-lock.yaml",
