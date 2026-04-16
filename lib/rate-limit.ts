@@ -1,4 +1,5 @@
-// TODO P3: replace with Upstash Redis for multi-instance effectiveness
+// In-memory per-process store — not globally consistent on multi-instance deployments (Vercel).
+// For strict global rate limiting, replace with Upstash Redis.
 
 type RateLimitWindow = { count: number; resetAt: number };
 

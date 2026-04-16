@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { opportunityEvents, subAccounts } from "@/drizzle/schema";
@@ -17,10 +18,10 @@ export const ingestWebhook = inngest.createFunction(
   async ({ event }) => {
     const parsed = WebhookReceivedDataSchema.safeParse(event.data);
     if (!parsed.success) {
-      console.error(
-        "ingestWebhook: invalid event data",
-        parsed.error.flatten(),
-      );
+      Sentry.captureMessage("ingestWebhook: invalid event data", {
+        level: "warning",
+        extra: { errors: parsed.error.flatten() },
+      });
       return { skipped: true as const, reason: "invalid_payload" as const };
     }
     const { event: ghlEvent } = parsed.data;
