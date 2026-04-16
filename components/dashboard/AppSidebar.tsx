@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
-import { usePathname } from "next/navigation";
+import { useState, type ReactNode } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import * as Sentry from "@sentry/nextjs";
+
+import { authClient } from "@/lib/auth-client";
 
 export type SidebarClient = {
   id: string;
@@ -41,6 +44,50 @@ function navClass(active: boolean): string {
     return "block no-underline fs-nav-item-active";
   }
   return "block no-underline fs-nav-item";
+}
+
+function SidebarSignOut() {
+  const router = useRouter();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function onSignOut() {
+    setError(null);
+    setPending(true);
+    try {
+      const out = await authClient.signOut();
+      if (out.error) {
+        setError(out.error.message ?? "Could not sign out");
+        return;
+      }
+      router.push("/sign-in");
+      router.refresh();
+    } catch (err) {
+      Sentry.captureException(err);
+      setError("Could not sign out. Please try again.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <div className="mt-2">
+      <button
+        type="button"
+        onClick={onSignOut}
+        disabled={pending}
+        className="fs-text-micro m-0 cursor-pointer border-0 bg-transparent p-0 text-left text-fs-faded hover:text-fs-amber disabled:cursor-not-allowed disabled:opacity-50"
+        aria-busy={pending}
+      >
+        {pending ? "Signing out…" : "Sign out"}
+      </button>
+      {error ? (
+        <p className="fs-text-micro mt-1 text-fs-red" role="alert">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  );
 }
 
 export function AppSidebar({
@@ -162,17 +209,18 @@ export function AppSidebar({
       </div>
 
       <div className="mt-auto border-t border-fs-border px-5 pt-4">
-        <div className="flex gap-3">
+        <div className="flex items-start gap-3">
           <div className="fs-text-label flex size-9 shrink-0 items-center justify-center rounded-full border border-fs-border bg-fs-surface-2 font-mono font-semibold text-fs-primary">
             {userInitials}
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="fs-text-label truncate font-medium text-fs-primary">
               {agencyName}
             </p>
             <p className="fs-text-micro m-0 font-mono text-fs-faded">
               Workspace · {clientCount} clients
             </p>
+            <SidebarSignOut />
           </div>
         </div>
         <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 fs-text-micro">

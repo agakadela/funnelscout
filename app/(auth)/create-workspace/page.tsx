@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import * as Sentry from "@sentry/nextjs";
 
 import { authClient } from "@/lib/auth-client";
 import { PENDING_WORKSPACE_SESSION_KEY } from "@/lib/auth-ui-constants";
@@ -126,12 +127,14 @@ export default function CreateWorkspacePage() {
       const out = await authClient.signOut();
       if (out.error) {
         setError(out.error.message ?? "Could not sign out");
-        setSwitchAccountPending(false);
         return;
       }
       router.push("/sign-in");
-    } catch {
+      router.refresh();
+    } catch (err) {
+      Sentry.captureException(err);
       setError("Could not sign out. Please try again.");
+    } finally {
       setSwitchAccountPending(false);
     }
   }
