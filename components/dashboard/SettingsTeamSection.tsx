@@ -17,7 +17,8 @@ export function SettingsTeamSection() {
         stable.
       </p>
       <p className="fs-text-caption mt-4 text-fs-faded">
-        Coming in the Team task — no member management here yet.
+        Member management is not available here yet; it will ship in a future
+        update.
       </p>
     </section>
   );

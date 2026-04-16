@@ -25,13 +25,17 @@ export async function loadOrganizationPreferences(
     return null;
   }
 
-  const payload: OrganizationPreferencesPayload = {
+  const parsed = organizationPreferencesPayloadSchema.safeParse({
     emailNotificationsEnabled: row.preferencesEmailNotificationsEnabled,
     weeklyDigestEnabled: row.preferencesWeeklyDigestEnabled,
     timezone: row.preferencesTimezone,
     digestDayOfWeek: row.preferencesDigestDayOfWeek,
     digestLocalHour: row.preferencesDigestLocalHour,
-  };
+  });
 
-  return organizationPreferencesPayloadSchema.parse(payload);
+  if (!parsed.success) {
+    return null;
+  }
+
+  return parsed.data;
 }

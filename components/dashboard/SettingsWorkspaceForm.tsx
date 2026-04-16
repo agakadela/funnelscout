@@ -6,6 +6,7 @@ import type { OrganizationPreferencesPayload } from "@/lib/settings/preferences-
 import {
   DIGEST_DAY_OPTIONS,
   formatDigestHourLabel,
+  organizationPreferencesPayloadSchema,
 } from "@/lib/settings/preferences-validation";
 
 type SettingsWorkspaceFormProps = {
@@ -64,22 +65,18 @@ export function SettingsWorkspaceForm({
         setErrorMessage(err);
         return;
       }
-      const parsed = json as Partial<OrganizationPreferencesPayload>;
-      if (typeof parsed.emailNotificationsEnabled === "boolean") {
-        setEmailNotificationsEnabled(parsed.emailNotificationsEnabled);
+      const parsedResponse =
+        organizationPreferencesPayloadSchema.safeParse(json);
+      if (!parsedResponse.success) {
+        setErrorMessage("Invalid response from server");
+        return;
       }
-      if (typeof parsed.weeklyDigestEnabled === "boolean") {
-        setWeeklyDigestEnabled(parsed.weeklyDigestEnabled);
-      }
-      if (typeof parsed.timezone === "string") {
-        setTimezone(parsed.timezone);
-      }
-      if (typeof parsed.digestDayOfWeek === "number") {
-        setDigestDayOfWeek(parsed.digestDayOfWeek);
-      }
-      if (typeof parsed.digestLocalHour === "number") {
-        setDigestLocalHour(parsed.digestLocalHour);
-      }
+      const data = parsedResponse.data;
+      setEmailNotificationsEnabled(data.emailNotificationsEnabled);
+      setWeeklyDigestEnabled(data.weeklyDigestEnabled);
+      setTimezone(data.timezone);
+      setDigestDayOfWeek(data.digestDayOfWeek);
+      setDigestLocalHour(data.digestLocalHour);
       setSavedAt(Date.now());
     } catch {
       setErrorMessage("Network error. Try again.");
