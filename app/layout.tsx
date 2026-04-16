@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import type { ReactNode } from "react";
 
 import "./globals.css";
@@ -10,11 +11,13 @@ export const metadata: Metadata = {
   description: "AI-powered sales pipeline intelligence for GHL agencies",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: ReactNode;
 }>) {
+  await connection();
+
   return (
     <html lang="en" className="h-full antialiased">
       <body className="min-h-full flex flex-col bg-fs-bg text-fs-primary font-sans">

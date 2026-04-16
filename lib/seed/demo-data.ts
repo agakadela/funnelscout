@@ -16,6 +16,31 @@ export const SEED_ANALYSIS_PERIOD_START_UTC = new Date(
 
 export const SEED_SUB_ACCOUNTS_PER_ORG = [3, 4, 5] as const;
 
+/** One entry per seed agency (`orgIndex` 0..2). Matches `organizations` preference columns. */
+export const SEED_ORGANIZATION_PREFERENCES = [
+  {
+    preferencesEmailNotificationsEnabled: true,
+    preferencesWeeklyDigestEnabled: true,
+    preferencesTimezone: "UTC",
+    preferencesDigestDayOfWeek: 1,
+    preferencesDigestLocalHour: 9,
+  },
+  {
+    preferencesEmailNotificationsEnabled: true,
+    preferencesWeeklyDigestEnabled: true,
+    preferencesTimezone: "America/New_York",
+    preferencesDigestDayOfWeek: 3,
+    preferencesDigestLocalHour: 8,
+  },
+  {
+    preferencesEmailNotificationsEnabled: true,
+    preferencesWeeklyDigestEnabled: false,
+    preferencesTimezone: "Europe/Warsaw",
+    preferencesDigestDayOfWeek: 5,
+    preferencesDigestLocalHour: 10,
+  },
+] as const;
+
 export function createMulberry32(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
