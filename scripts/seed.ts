@@ -33,6 +33,7 @@ import {
   buildSeedLogicalOpportunityEventsForSubAccount,
   filterMetricRowsForPeriod,
   logicalEventsToMetricRows,
+  SEED_ORGANIZATION_PREFERENCES,
   seedGhlContactId,
 } from "@/lib/seed/demo-data";
 
@@ -139,6 +140,8 @@ async function main(): Promise<void> {
       })
       .onConflictDoNothing({ target: member.id });
 
+    const workspacePrefs = SEED_ORGANIZATION_PREFERENCES[orgIndex]!;
+
     await db
       .insert(organizations)
       .values({
@@ -149,6 +152,7 @@ async function main(): Promise<void> {
         ghlAccessToken: access,
         ghlRefreshToken: refresh,
         ghlTokenExpiresAt: expiresAt,
+        ...workspacePrefs,
       })
       .onConflictDoNothing({ target: organizations.id });
 
@@ -293,6 +297,7 @@ void (async (): Promise<void> => {
         "  seed.owner.01@funnelscout.local / seed.owner.02@funnelscout.local / seed.owner.03@funnelscout.local",
         `  password: ${SEED_OWNER_PASSWORD}`,
         "Each account is owner of one demo agency (BetterAuth org ↔ workspace already linked).",
+        "Workspace email/digest preferences are seeded per agency (mixed timezones; agency 3 has weekly digest off).",
       ].join("\n"),
     );
   } catch (err) {

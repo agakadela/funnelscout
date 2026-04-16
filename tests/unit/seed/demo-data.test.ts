@@ -10,6 +10,7 @@ import {
   SEED_ANALYSIS_PERIOD_START_UTC,
   SEED_HISTORY_END_UTC,
   SEED_HISTORY_START_UTC,
+  SEED_ORGANIZATION_PREFERENCES,
   SEED_SUB_ACCOUNTS_PER_ORG,
   buildSeedDemoAnalysisReportJson,
   buildSeedLogicalOpportunityEventsForSubAccount,
@@ -18,6 +19,7 @@ import {
   logicalEventsToMetricRows,
   seedRngForSubAccount,
 } from "@/lib/seed/demo-data";
+import { organizationPreferencesPayloadSchema } from "@/lib/settings/preferences-validation";
 
 describe("lib/seed/demo-data", () => {
   it("buildSeedDemoAnalysisReportJson matches AnalysisReportSchema", () => {
@@ -85,6 +87,20 @@ describe("lib/seed/demo-data", () => {
   it("declares 3, 4, and 5 sub-accounts per seed org", () => {
     expect(SEED_SUB_ACCOUNTS_PER_ORG).toEqual([3, 4, 5]);
     expect(SEED_SUB_ACCOUNTS_PER_ORG.reduce((a, b) => a + b, 0)).toBe(12);
+  });
+
+  it("SEED_ORGANIZATION_PREFERENCES matches settings payload schema (one per seed org)", () => {
+    expect(SEED_ORGANIZATION_PREFERENCES).toHaveLength(3);
+    for (const row of SEED_ORGANIZATION_PREFERENCES) {
+      const parsed = organizationPreferencesPayloadSchema.safeParse({
+        emailNotificationsEnabled: row.preferencesEmailNotificationsEnabled,
+        weeklyDigestEnabled: row.preferencesWeeklyDigestEnabled,
+        timezone: row.preferencesTimezone,
+        digestDayOfWeek: row.preferencesDigestDayOfWeek,
+        digestLocalHour: row.preferencesDigestLocalHour,
+      });
+      expect(parsed.success).toBe(true);
+    }
   });
 
   it("mulberry32 RNG stays in [0, 1)", () => {
