@@ -29,6 +29,21 @@ export const organizations = pgTable("organizations", {
     .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),
+  preferencesEmailNotificationsEnabled: boolean(
+    "preferences_email_notifications_enabled",
+  )
+    .default(true)
+    .notNull(),
+  preferencesWeeklyDigestEnabled: boolean("preferences_weekly_digest_enabled")
+    .default(true)
+    .notNull(),
+  preferencesTimezone: text("preferences_timezone").notNull().default("UTC"),
+  preferencesDigestDayOfWeek: integer("preferences_digest_day_of_week")
+    .notNull()
+    .default(1),
+  preferencesDigestLocalHour: integer("preferences_digest_local_hour")
+    .notNull()
+    .default(9),
 });
 
 export const subAccounts = pgTable(
