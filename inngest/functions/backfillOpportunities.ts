@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import {
@@ -60,10 +61,10 @@ export const backfillOpportunities = inngest.createFunction(
   async ({ event, step }) => {
     const dataParsed = OAuthConnectedDataSchema.safeParse(event.data);
     if (!dataParsed.success) {
-      console.error(
-        "backfillOpportunities: invalid event data",
-        dataParsed.error.flatten(),
-      );
+      Sentry.captureMessage("backfillOpportunities: invalid event data", {
+        level: "warning",
+        extra: { errors: dataParsed.error.flatten() },
+      });
       return { skipped: true as const, reason: "invalid_payload" as const };
     }
     const { organizationId } = dataParsed.data;
@@ -83,6 +84,10 @@ export const backfillOpportunities = inngest.createFunction(
       return fetchCompanyLocations(organizationId, org.ghlAgencyId!);
     });
 
+    // One step.run() per location × 2 loops = ~2×N steps per function run.
+    // Safe for target market (5–15 locations). If an org ever has >200 locations,
+    // refactor to a fan-out pattern: step.sendEvent() per location, handled by a
+    // separate Inngest function (avoids Inngest's per-run step limit).
     for (const loc of locations) {
       await step.run(`upsert-sub-${loc.id}`, async () => {
         await db

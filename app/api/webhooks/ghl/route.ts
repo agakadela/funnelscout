@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nextjs";
 import { NextResponse, type NextRequest } from "next/server";
 import { inngest } from "@/inngest/client";
 import { env } from "@/lib/env";
@@ -35,6 +36,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
   const parsed = GHLWebhookEventSchema.safeParse(json);
   if (!parsed.success) {
+    Sentry.captureException(new Error("GHL webhook payload failed schema validation"), {
+      extra: { errors: parsed.error.flatten() },
+    });
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 
