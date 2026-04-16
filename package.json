@@ -20,7 +20,8 @@
     "db:seed": "tsx scripts/run-db-seed.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:visual": "playwright test"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
@@ -48,6 +49,7 @@
     }
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@react-email/components": "^0.0.33",
     "@tailwindcss/postcss": "^4.1.8",
     "@types/node": "^20.17.14",

@@ -5,6 +5,7 @@ node_modules
 pnpm-lock.yaml
 package-lock.json
 coverage
+test-results
 drizzle/migrations
 
 .claude/
