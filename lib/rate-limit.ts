@@ -6,22 +6,22 @@
 
 type RateLimitWindow = { count: number; resetAt: number };
 
-const orgWindows = new Map<string, RateLimitWindow>();
+const rateLimitWindows = new Map<string, RateLimitWindow>();
 
 export function resetInMemoryRateLimitWindowsForTests(): void {
-  orgWindows.clear();
+  rateLimitWindows.clear();
 }
 
 export function checkRateLimit(
-  orgId: string,
+  bucketKey: string,
   maxRequests = 10,
   windowMs = 60_000,
 ): { allowed: boolean; retryAfterMs: number } {
   const now = Date.now();
-  const existing = orgWindows.get(orgId);
+  const existing = rateLimitWindows.get(bucketKey);
 
   if (!existing || now > existing.resetAt) {
-    orgWindows.set(orgId, { count: 1, resetAt: now + windowMs });
+    rateLimitWindows.set(bucketKey, { count: 1, resetAt: now + windowMs });
     return { allowed: true, retryAfterMs: 0 };
   }
 

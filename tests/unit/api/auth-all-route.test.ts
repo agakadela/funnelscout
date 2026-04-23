@@ -34,6 +34,7 @@ describe("app/api/auth/[...all] route wrapper", () => {
     hoisted.rateLimit.mockImplementation(() => null);
   });
 
+  // Path is arbitrary: the mock bypasses real classifyAuthRateLimitGroup — we only assert the route wrapper short-circuits when the limit helper returns a response.
   it("returns 429 without calling Better Auth when rate limit returns a response", async () => {
     hoisted.rateLimit.mockReturnValueOnce(
       NextResponse.json({ error: "Too many", retryAfter: 9 }, { status: 429 }),
