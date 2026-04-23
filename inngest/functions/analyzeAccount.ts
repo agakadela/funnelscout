@@ -3,15 +3,14 @@ import { and, eq, ne } from "drizzle-orm";
 import { NonRetriableError } from "inngest";
 
 import { runMultiStepAnalysisAgent } from "@/lib/ai/agent";
-import { AnalysisReportSchema } from "@/lib/ai/types";
 import { checkPlanLimit } from "@/lib/billing";
-import { analyses, organizations, subAccounts } from "@/drizzle/schema";
+import { analyses } from "@/drizzle/schema";
 import { AnalysisAccountRequestedDataSchema } from "@/lib/analysis/events";
-import { resolveDigestRecipientEmail } from "@/lib/analysis/digest-recipient";
 import {
   buildPipelineMetricsSnapshot,
   loadOpportunityEventsForPeriod,
 } from "@/lib/analysis/metrics";
+import { runWeeklyDigestAfterAnalysis } from "@/lib/analysis/weekly-digest-after-analysis";
 import { db } from "@/lib/db";
 import { sendWeeklyDigestEmail } from "@/lib/resend";
 import { inngest } from "@/inngest/client";
@@ -185,77 +184,13 @@ export const analyzeAccount = inngest.createFunction(
     });
 
     await step.run("weekly-digest-email", async () => {
-      const row = await db.query.analyses.findFirst({
-        where: and(
-          eq(analyses.id, data.analysisId),
-          eq(analyses.organizationId, data.organizationId),
-        ),
+      return runWeeklyDigestAfterAnalysis({
+        organizationId: data.organizationId,
+        analysisId: data.analysisId,
+        subAccountId: data.subAccountId,
+        db,
+        sendWeeklyDigestEmail,
       });
-
-      if (row?.status !== "completed" || !row.reportJson) {
-        return { sent: false as const, reason: "not_completed" as const };
-      }
-
-      const report = AnalysisReportSchema.safeParse(row.reportJson);
-      if (!report.success) {
-        return { sent: false as const, reason: "invalid_report" as const };
-      }
-
-      const orgRow = await db.query.organizations.findFirst({
-        where: eq(organizations.id, data.organizationId),
-      });
-      const subRow = await db.query.subAccounts.findFirst({
-        where: and(
-          eq(subAccounts.id, data.subAccountId),
-          eq(subAccounts.organizationId, data.organizationId),
-        ),
-      });
-
-      if (!orgRow?.betterAuthOrganizationId || !subRow) {
-        return { sent: false as const, reason: "missing_org_context" as const };
-      }
-
-      const to = await resolveDigestRecipientEmail(
-        orgRow.betterAuthOrganizationId,
-      );
-      if (!to) {
-        return { sent: false as const, reason: "no_recipient" as const };
-      }
-
-      const recs = report.data.recommendations.recommendations.slice(0, 3);
-
-      try {
-        await sendWeeklyDigestEmail({
-          to,
-          agencyName: orgRow.name,
-          subAccountName: subRow.name,
-          accountPathSegment: subRow.ghlLocationId,
-          recommendations: recs.map((r) => ({
-            title: r.title,
-            body: r.body,
-            impact: r.impact,
-          })),
-        });
-      } catch (emailErr) {
-        Sentry.withScope((scope) => {
-          scope.setTag("inngest.function", "analyze-account");
-          scope.setTag("inngest.step", "weekly-digest-email");
-          scope.setContext("tenant", {
-            organizationId: data.organizationId,
-            analysisId: data.analysisId,
-            subAccountId: data.subAccountId,
-          });
-          Sentry.captureException(emailErr);
-        });
-        return {
-          sent: false as const,
-          reason: "send_failed" as const,
-          message:
-            emailErr instanceof Error ? emailErr.message : "unknown_error",
-        };
-      }
-
-      return { sent: true as const };
     });
 
     return { ok: true as const };
