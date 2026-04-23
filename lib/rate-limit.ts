@@ -1,5 +1,8 @@
 // In-memory per-process store — not globally consistent on multi-instance deployments (Vercel).
 // For strict global rate limiting, replace with Upstash Redis.
+//
+// Callers must namespace keys (e.g. org UUID for analysis, `auth:${group}:${ip}` for Better Auth) so
+// buckets never collide across features.
 
 type RateLimitWindow = { count: number; resetAt: number };
 
