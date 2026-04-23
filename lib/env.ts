@@ -2,6 +2,21 @@ import { z } from "zod";
 
 import { nextPublicSentryDsnSchema } from "./env/next-public-sentry-dsn";
 
+/**
+ * Parses optional per-minute auth rate limits from env.
+ * Empty / missing → `defaultPerMinute`. Invalid numbers → `defaultPerMinute`.
+ * `0` disables that bucket (always allow).
+ */
+function parseAuthRateLimitOptional(
+  raw: string | undefined,
+  defaultPerMinute: number,
+): number {
+  if (raw === undefined || raw.trim() === "") return defaultPerMinute;
+  const n = Number.parseInt(raw, 10);
+  if (!Number.isFinite(n) || n < 0) return defaultPerMinute;
+  return n;
+}
+
 const envSchema = z
   .object({
     NODE_ENV: z.preprocess(
@@ -45,6 +60,22 @@ const envSchema = z
         const n = Number.parseInt(raw, 10);
         return Number.isFinite(n) && n >= 0 ? n : 0;
       }),
+    AUTH_RATE_LIMIT_SIGN_IN_PER_IP_PER_MINUTE: z
+      .string()
+      .optional()
+      .transform((raw) => parseAuthRateLimitOptional(raw, 30)),
+    AUTH_RATE_LIMIT_SIGN_UP_PER_IP_PER_MINUTE: z
+      .string()
+      .optional()
+      .transform((raw) => parseAuthRateLimitOptional(raw, 12)),
+    AUTH_RATE_LIMIT_PASSWORD_RESET_PER_IP_PER_MINUTE: z
+      .string()
+      .optional()
+      .transform((raw) => parseAuthRateLimitOptional(raw, 8)),
+    AUTH_RATE_LIMIT_SEND_VERIFICATION_EMAIL_PER_IP_PER_MINUTE: z
+      .string()
+      .optional()
+      .transform((raw) => parseAuthRateLimitOptional(raw, 6)),
   })
   .superRefine((data, ctx) => {
     if (data.NODE_ENV === "production" && !data.NEXT_PUBLIC_SENTRY_DSN) {
@@ -97,6 +128,14 @@ export const env = {
   auth: {
     secret: _env.BETTER_AUTH_SECRET,
     url: _env.BETTER_AUTH_URL,
+    rateLimit: {
+      signInPerIpPerMinute: _env.AUTH_RATE_LIMIT_SIGN_IN_PER_IP_PER_MINUTE,
+      signUpPerIpPerMinute: _env.AUTH_RATE_LIMIT_SIGN_UP_PER_IP_PER_MINUTE,
+      passwordResetPerIpPerMinute:
+        _env.AUTH_RATE_LIMIT_PASSWORD_RESET_PER_IP_PER_MINUTE,
+      sendVerificationEmailPerIpPerMinute:
+        _env.AUTH_RATE_LIMIT_SEND_VERIFICATION_EMAIL_PER_IP_PER_MINUTE,
+    },
   },
   database: {
     url: _env.DATABASE_URL,
