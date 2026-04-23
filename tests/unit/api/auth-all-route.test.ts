@@ -5,7 +5,10 @@ const hoisted = vi.hoisted(() => ({
   innerHandler: vi.fn(
     async () => new Response(JSON.stringify({ ok: true }), { status: 200 }),
   ),
-  rateLimit: vi.fn(() => null as NextResponse | null),
+  rateLimit: vi.fn((req: NextRequest): NextResponse | null => {
+    void req;
+    return null;
+  }),
 }));
 
 vi.mock("@/lib/auth", () => ({ auth: {} }));
