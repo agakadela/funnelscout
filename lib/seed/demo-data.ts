@@ -26,14 +26,14 @@ export const SEED_ORGANIZATION_PREFERENCES = [
     preferencesDigestLocalHour: 9,
   },
   {
-    preferencesEmailNotificationsEnabled: true,
+    preferencesEmailNotificationsEnabled: false,
     preferencesWeeklyDigestEnabled: true,
     preferencesTimezone: "America/New_York",
     preferencesDigestDayOfWeek: 3,
     preferencesDigestLocalHour: 8,
   },
   {
-    preferencesEmailNotificationsEnabled: true,
+    preferencesEmailNotificationsEnabled: false,
     preferencesWeeklyDigestEnabled: false,
     preferencesTimezone: "Europe/Warsaw",
     preferencesDigestDayOfWeek: 5,

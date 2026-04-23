@@ -137,6 +137,8 @@ export function SettingsWorkspaceForm({
             </p>
             <p className="fs-text-small mt-1 max-w-md text-fs-secondary">
               A single weekly email summarizing pipeline health across clients.
+              Sends only when email notifications are on and your workspace
+              email is verified.
             </p>
           </div>
           <label className="flex cursor-pointer items-center gap-3">

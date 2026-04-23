@@ -4,6 +4,10 @@ import { db } from "@/lib/db";
 
 /**
  * Resolves a single recipient for transactional digests (owner first, else any member).
+ * Only users with verified email are considered.
+ *
+ * `member.organizationId` is the Better Auth organization id (same as
+ * `organizations.betterAuthOrganizationId`), not `organizations.id` from app data.
  */
 export async function resolveDigestRecipientEmail(
   betterAuthOrganizationId: string,
@@ -16,6 +20,7 @@ export async function resolveDigestRecipientEmail(
       and(
         eq(member.organizationId, betterAuthOrganizationId),
         eq(member.role, "owner"),
+        eq(user.emailVerified, true),
       ),
     )
     .limit(1);
@@ -28,7 +33,12 @@ export async function resolveDigestRecipientEmail(
     .select({ email: user.email })
     .from(member)
     .innerJoin(user, eq(member.userId, user.id))
-    .where(eq(member.organizationId, betterAuthOrganizationId))
+    .where(
+      and(
+        eq(member.organizationId, betterAuthOrganizationId),
+        eq(user.emailVerified, true),
+      ),
+    )
     .limit(1);
 
   return anyMember?.email ?? null;

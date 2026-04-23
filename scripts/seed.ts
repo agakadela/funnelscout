@@ -297,7 +297,7 @@ void (async (): Promise<void> => {
         "  seed.owner.01@funnelscout.local / seed.owner.02@funnelscout.local / seed.owner.03@funnelscout.local",
         `  password: ${SEED_OWNER_PASSWORD}`,
         "Each account is owner of one demo agency (BetterAuth org ↔ workspace already linked).",
-        "Workspace email/digest preferences are seeded per agency (mixed timezones; agency 3 has weekly digest off).",
+        "Workspace email/digest preferences are seeded per agency (mixed timezones; agency 2 has digest UI on but email notifications off; agency 3 has both off).",
       ].join("\n"),
     );
   } catch (err) {
