@@ -177,4 +177,114 @@ describe("runWeeklyDigestAfterAnalysis", () => {
     expect(result).toEqual({ sent: false, reason: "no_recipient" });
     expect(hoisted.sendDigest).not.toHaveBeenCalled();
   });
+
+  it("skips with not_completed when analysis is not completed", async () => {
+    hoisted.findAnalysis.mockResolvedValue({
+      status: "running",
+      reportJson: minimalReport,
+    });
+
+    const result = await runWeeklyDigestAfterAnalysis({
+      organizationId: orgId,
+      analysisId,
+      subAccountId: subId,
+      db: mockDb() as never,
+      sendWeeklyDigestEmail: hoisted.sendDigest,
+    });
+
+    expect(result).toEqual({ sent: false, reason: "not_completed" });
+    expect(hoisted.sendDigest).not.toHaveBeenCalled();
+  });
+
+  it("skips with not_completed when reportJson is missing", async () => {
+    hoisted.findAnalysis.mockResolvedValue({
+      status: "completed",
+      reportJson: null,
+    });
+
+    const result = await runWeeklyDigestAfterAnalysis({
+      organizationId: orgId,
+      analysisId,
+      subAccountId: subId,
+      db: mockDb() as never,
+      sendWeeklyDigestEmail: hoisted.sendDigest,
+    });
+
+    expect(result).toEqual({ sent: false, reason: "not_completed" });
+    expect(hoisted.sendDigest).not.toHaveBeenCalled();
+  });
+
+  it("skips with invalid_report when reportJson does not match schema", async () => {
+    hoisted.findAnalysis.mockResolvedValue({
+      status: "completed",
+      reportJson: { not: "a valid analysis report" },
+    });
+
+    const result = await runWeeklyDigestAfterAnalysis({
+      organizationId: orgId,
+      analysisId,
+      subAccountId: subId,
+      db: mockDb() as never,
+      sendWeeklyDigestEmail: hoisted.sendDigest,
+    });
+
+    expect(result).toEqual({ sent: false, reason: "invalid_report" });
+    expect(hoisted.sendDigest).not.toHaveBeenCalled();
+  });
+
+  it("skips with missing_org_context when sub-account row is missing", async () => {
+    hoisted.findSub.mockResolvedValue(undefined);
+
+    const result = await runWeeklyDigestAfterAnalysis({
+      organizationId: orgId,
+      analysisId,
+      subAccountId: subId,
+      db: mockDb() as never,
+      sendWeeklyDigestEmail: hoisted.sendDigest,
+    });
+
+    expect(result).toEqual({ sent: false, reason: "missing_org_context" });
+    expect(hoisted.sendDigest).not.toHaveBeenCalled();
+  });
+
+  it("skips with missing_org_context when betterAuthOrganizationId is missing", async () => {
+    hoisted.findOrg.mockResolvedValue({
+      id: orgId,
+      name: "Agency",
+      betterAuthOrganizationId: null,
+      preferencesWeeklyDigestEnabled: true,
+      preferencesEmailNotificationsEnabled: true,
+    });
+
+    const result = await runWeeklyDigestAfterAnalysis({
+      organizationId: orgId,
+      analysisId,
+      subAccountId: subId,
+      db: mockDb() as never,
+      sendWeeklyDigestEmail: hoisted.sendDigest,
+    });
+
+    expect(result).toEqual({ sent: false, reason: "missing_org_context" });
+    expect(hoisted.sendDigest).not.toHaveBeenCalled();
+  });
+
+  it("returns send_failed with message when Resend throws", async () => {
+    const err = new Error("resend down");
+    hoisted.sendDigest.mockRejectedValue(err);
+
+    const result = await runWeeklyDigestAfterAnalysis({
+      organizationId: orgId,
+      analysisId,
+      subAccountId: subId,
+      db: mockDb() as never,
+      sendWeeklyDigestEmail: hoisted.sendDigest,
+    });
+
+    expect(result).toEqual({
+      sent: false,
+      reason: "send_failed",
+      message: "resend down",
+    });
+    expect(hoisted.sendDigest).toHaveBeenCalledTimes(1);
+  });
 });

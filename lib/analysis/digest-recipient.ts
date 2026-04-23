@@ -5,6 +5,9 @@ import { db } from "@/lib/db";
 /**
  * Resolves a single recipient for transactional digests (owner first, else any member).
  * Only users with verified email are considered.
+ *
+ * `member.organizationId` is the Better Auth organization id (same as
+ * `organizations.betterAuthOrganizationId`), not `organizations.id` from app data.
  */
 export async function resolveDigestRecipientEmail(
   betterAuthOrganizationId: string,
