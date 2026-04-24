@@ -23,8 +23,10 @@ describe("getAuthApiSubpath", () => {
 
 describe("classifyAuthRateLimitGroup", () => {
   it.each([
+    ["/sign-in", "sign-in"],
     ["/sign-in/email", "sign-in"],
     ["/sign-in/social", "sign-in"],
+    ["/sign-up", "sign-up"],
     ["/sign-up/email", "sign-up"],
     ["/request-password-reset", "password-reset"],
     ["/reset-password", "password-reset"],
