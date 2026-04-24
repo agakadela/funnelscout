@@ -42,10 +42,10 @@ export function classifyAuthRateLimitGroup(
 ): AuthRateLimitGroup | null {
   const p = subpath.startsWith("/") ? subpath : `/${subpath}`;
 
-  if (p.startsWith("/sign-in/")) {
+  if (p === "/sign-in" || p.startsWith("/sign-in/")) {
     return "sign-in";
   }
-  if (p.startsWith("/sign-up/")) {
+  if (p === "/sign-up" || p.startsWith("/sign-up/")) {
     return "sign-up";
   }
   if (p === "/request-password-reset" || p.startsWith("/reset-password")) {
