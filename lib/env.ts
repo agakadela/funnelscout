@@ -17,6 +17,24 @@ function parseAuthRateLimitOptional(
   return n;
 }
 
+/** Resend `from:` — display name + angle-bracket email (e.g. FunnelScout <hello@funnelscout.ai>). */
+function parseResendFromEmail(raw: string): string | null {
+  const trimmed = raw.trim();
+  const angle = trimmed.lastIndexOf(" <");
+  if (angle < 1 || !trimmed.endsWith(">")) return null;
+  const email = trimmed.slice(angle + 2, -1).trim();
+  const emailOk = z.string().email().safeParse(email);
+  return emailOk.success ? email : null;
+}
+
+function isValidResendFromHeader(raw: string): boolean {
+  const trimmed = raw.trim();
+  const angle = trimmed.lastIndexOf(" <");
+  if (angle < 1 || !trimmed.endsWith(">")) return false;
+  const display = trimmed.slice(0, angle).trim();
+  return display.length > 0 && parseResendFromEmail(raw) !== null;
+}
+
 const envSchema = z
   .object({
     NODE_ENV: z.preprocess(
@@ -35,6 +53,14 @@ const envSchema = z
     STRIPE_WEBHOOK_SECRET: z.string().min(1),
     ANTHROPIC_API_KEY: z.string().min(1),
     RESEND_API_KEY: z.string().min(1),
+    RESEND_FROM: z
+      .string()
+      .optional()
+      .transform((s) => {
+        if (s === undefined) return undefined;
+        const t = s.trim();
+        return t === "" ? undefined : t;
+      }),
     INNGEST_EVENT_KEY: z.string().min(1),
     INNGEST_SIGNING_KEY: z.string().min(1),
     BETTER_AUTH_SECRET: z.string().min(1),
@@ -86,6 +112,37 @@ const envSchema = z
         path: ["NEXT_PUBLIC_SENTRY_DSN"],
       });
     }
+    if (
+      data.RESEND_FROM !== undefined &&
+      !isValidResendFromHeader(data.RESEND_FROM)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "RESEND_FROM must look like: FunnelScout <hello@example.com> (display name, space, email in angle brackets).",
+        path: ["RESEND_FROM"],
+      });
+    }
+    if (data.NODE_ENV === "production") {
+      if (data.RESEND_FROM === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "RESEND_FROM is required in production — use a domain verified in Resend (not onboarding@resend.dev).",
+          path: ["RESEND_FROM"],
+        });
+      } else {
+        const email = parseResendFromEmail(data.RESEND_FROM);
+        if (email && email.toLowerCase().endsWith("@resend.dev")) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message:
+              "RESEND_FROM must use your verified sending domain in production, not @resend.dev.",
+            path: ["RESEND_FROM"],
+          });
+        }
+      }
+    }
   });
 
 const parsed = envSchema.safeParse(process.env);
@@ -120,6 +177,7 @@ export const env = {
   },
   resend: {
     apiKey: _env.RESEND_API_KEY,
+    from: _env.RESEND_FROM,
   },
   inngest: {
     eventKey: _env.INNGEST_EVENT_KEY,
