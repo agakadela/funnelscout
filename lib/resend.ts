@@ -8,7 +8,18 @@ import { env } from "@/lib/env";
 
 const resend = new Resend(env.resend.apiKey);
 
-const TRANSACTIONAL_FROM = "FunnelScout <onboarding@resend.dev>";
+function transactionalFrom(): string {
+  const configured = env.resend.from;
+  if (configured !== undefined) {
+    return configured;
+  }
+  if (env.nodeEnv === "development") {
+    return "FunnelScout <onboarding@resend.dev>";
+  }
+  throw new Error(
+    "RESEND_FROM is not set. Set RESEND_FROM in the environment (see .env.example). Local development may omit it to use the Resend sandbox sender.",
+  );
+}
 
 function appOrigin(): string {
   return env.auth.url.replace(/\/$/, "");
@@ -31,7 +42,7 @@ export async function sendWeeklyDigestEmail(params: {
     }),
   );
   const { error } = await resend.emails.send({
-    from: TRANSACTIONAL_FROM,
+    from: transactionalFrom(),
     to: params.to,
     subject: `Weekly pipeline digest — ${params.subAccountName}`,
     html,
@@ -51,7 +62,7 @@ export async function sendVerificationEmail(params: {
     }),
   );
   const { error } = await resend.emails.send({
-    from: TRANSACTIONAL_FROM,
+    from: transactionalFrom(),
     to: params.to,
     subject: "Verify your FunnelScout email",
     html,
@@ -71,7 +82,7 @@ export async function sendPasswordResetEmail(params: {
     }),
   );
   const { error } = await resend.emails.send({
-    from: TRANSACTIONAL_FROM,
+    from: transactionalFrom(),
     to: params.to,
     subject: "Reset your FunnelScout password",
     html,
@@ -86,7 +97,7 @@ export async function sendGhlTokenRefreshFailedEmail(params: {
   organizationName: string;
 }): Promise<void> {
   const { error } = await resend.emails.send({
-    from: TRANSACTIONAL_FROM,
+    from: transactionalFrom(),
     to: params.to,
     subject: "Reconnect your GoHighLevel account",
     text: `We could not refresh your GoHighLevel connection for ${params.organizationName}. Please sign in to FunnelScout and connect GoHighLevel again.`,
