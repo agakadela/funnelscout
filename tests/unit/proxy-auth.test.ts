@@ -34,4 +34,11 @@ describe("proxy auth backstop", () => {
     expect(res.status).toBe(200);
     assertCspNoncePresent(res);
   });
+
+  it("does not redirect unauthenticated /api/health (public liveness)", () => {
+    const req = new NextRequest(new URL("http://localhost:3000/api/health"));
+    const res = proxy(req);
+    expect(res.status).toBe(200);
+    assertCspNoncePresent(res);
+  });
 });
